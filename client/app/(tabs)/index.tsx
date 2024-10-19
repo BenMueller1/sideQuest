@@ -1,9 +1,10 @@
 import { StyleSheet, FlatList, View, Modal } from "react-native";
-import { EventType } from "../../assets/types/Event";
+import { EventType, InterestType } from "../../assets/types/Event";
 import { events } from "../../assets/dummy";
 import { Button, Card, Text } from "tamagui"; // or '@tamagui/core'
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const renderItem = ({ item }: { item: EventType }) => {
   return (
@@ -15,8 +16,51 @@ const renderItem = ({ item }: { item: EventType }) => {
   );
 };
 
+const BACKEND_URL = "http://localhost:5001";
+
 export default function HomeScreen() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [events, setEvents] = useState<EventType[]>([]);
+
+  // pull all events from backend on load
+  async function fetchEvents() {
+    try {
+      console.log('bm - fetchEvents');
+      const response = await axios.get(BACKEND_URL + "/events/all");
+      const responseData = response.data;
+      const eventsFromResponse = responseData.map((event: any) => {
+        const interests = responseData.interests?.map((interest: any): InterestType => ({
+          id: interest?.id,
+          name: interest?.name,
+          description: interest?.description,
+        }));
+        return {
+          id: event.id,
+          createdAt: event.createdAt ?? null,
+          title: event.title ?? "",
+          description: event.description ?? "",
+          latitude: event.latitude ?? 0,
+          longitude: event.longitude ?? 0,
+          capacity: event.capacity ?? 5,
+          interests: event.interests ?? [],
+        }
+      });
+      setEvents(eventsFromResponse);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error:', error);  // Handle any errors
+    }
+  }
+
+  // runs on load
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  if (isLoading) {
+    return null; 
+  }
 
   return (
     <SafeAreaView style={styles.container}>
