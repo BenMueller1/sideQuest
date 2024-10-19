@@ -17,13 +17,12 @@ model User {
   id Int @id @default(autoincrement())
   email     String  @unique
   hashed_password String
-  username      String
-  name String
   createdAt DateTime @default(now())
-  age Int
-  gender String
-  latitude Float
-  longitude Float
+  name String?
+  age Int?
+  gender String?
+  latitude Float?
+  longitude Float?
   interests Interest[] @relation("UserInterests")
   embarkations Embarkation[]
   groups Group[] @relation("UserGroups")
