@@ -45,6 +45,7 @@ model Interest {
   id Int @id @default(autoincrement())
   name String
   description String
+  embedding Float[]
   users User[] @relation("UserInterests")
   events Event[] @relation("EventInterests")
 }
