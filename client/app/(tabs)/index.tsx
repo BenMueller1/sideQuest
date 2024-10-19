@@ -1,20 +1,41 @@
-import { StyleSheet, FlatList, View, Modal } from "react-native";
+import { StyleSheet, FlatList, View, Modal, Text, Button, TouchableOpacity, Touchable } from "react-native";
 import { EventType, InterestType } from "../../assets/types/Event";
 import { events } from "../../assets/dummy";
-import { Button, Card, Text } from "tamagui"; // or '@tamagui/core'
+import type { CardProps } from 'tamagui'
+import { Button as TamaGuiButton, Text as TamaGuiText } from 'tamagui'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-icons
 
-const renderItem = ({ item }: { item: EventType }) => {
-  return (
-    <Card style={{ marginBottom: 10, marginHorizontal: 10 }}>
-      <Card.Header>
-        <Text>{item.title}</Text>
-      </Card.Header>
-    </Card>
-  );
-};
+
+// const renderItem = ({ item }: { item: EventType }) => {
+//   return (
+//     <Card 
+//       elevate 
+//       bordered 
+//       padding="$4" 
+//       backgroundColor="$backgroundStrong" 
+//       style={styles.card}
+//     >
+//       <Card.Header padded>
+//         <Text fontSize="$6" fontWeight="700">{item.title}</Text>
+//       </Card.Header>
+//       <Text fontSize="$4" color="$color" marginBottom="$2">
+//         {item.description}
+//       </Text>
+//       <Text fontSize="$3" color="$colorMuted">
+//         Capacity: {item.capacity}
+//       </Text>
+//       <Card.Footer>
+//         <Button marginTop="$2">
+//           Join Event
+//         </Button>
+//       </Card.Footer>
+//     </Card>
+//   );
+// };
+
 
 const BACKEND_URL = "http://localhost:5001";
 
@@ -22,6 +43,9 @@ export default function HomeScreen() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<EventType[]>([]);
+
+  // null means no event is currently extended
+  const [extendedEventId, setExtendedEventId] = useState<number | null>(null);
 
   // pull all events from backend on load
   async function fetchEvents() {
@@ -58,6 +82,61 @@ export default function HomeScreen() {
     fetchEvents();
   }, []);
 
+  // Render each event card
+  const renderExpandedItem = ({ item }: { item: EventType }) => {
+    return (
+      <TouchableOpacity onPress={() => {
+        console.log(`Pressed event ${item.id}`);
+        setExtendedEventId(null);
+      }}>
+        <View style={styles.expandedCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <View style={styles.cardCapacityContainer}>
+              <Text style={styles.cardCapacity}>1/{item.capacity}</Text>
+              <FontAwesome name="user" size={16} color="#f0f0f0" />
+            </View>
+          </View>
+          <Text style={styles.cardDescription}>{item.description}</Text>
+
+          <TouchableOpacity
+            style={styles.joinButton}
+            onPress={() => console.log(`Joining event ${item.title}`)}
+          >
+            <Text style={styles.joinButtonText}>Join</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderItem = ({ item }: { item: EventType }) => {
+    return (
+      <TouchableOpacity onPress={() => {
+        console.log(`Pressed event ${item.id}`);
+        setExtendedEventId(item.id);
+      }}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <View style={styles.cardCapacityContainer}>
+              <Text style={styles.cardCapacity}>1/{item.capacity}</Text>
+              <FontAwesome name="user" size={16} color="#f0f0f0" /> {/* User icon from @expo/vector-icons */}
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  const renderListItem = ({ item }: { item: EventType }) => {
+    if (item.id === extendedEventId) {
+      return renderExpandedItem({ item });
+    } else {
+      return renderItem({ item });
+    }
+  }
+  
   if (isLoading) {
     return null; 
   }
@@ -67,20 +146,20 @@ export default function HomeScreen() {
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
+        renderItem={renderListItem}
       />
 
-      <Button
+      <TamaGuiButton
         style={styles.floatingButton}
         backgroundColor="black"
         circular
         size={40}
         onPress={() => setIsOpen(true)}
       >
-        <Text color="white" style={styles.buttonText}>
+        <TamaGuiText color="white" style={styles.buttonText}>
           +
-        </Text>
-      </Button>
+        </TamaGuiText>
+      </TamaGuiButton>
 
       <Modal
         transparent={true}
@@ -90,9 +169,9 @@ export default function HomeScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>Hello World!</Text>
-            <Button onPress={() => setIsOpen(false)}>
+            <TamaGuiButton onPress={() => setIsOpen(false)}>
               <Text>Close</Text>
-            </Button>
+            </TamaGuiButton>
           </View>
         </SafeAreaView>
       </Modal>
@@ -129,5 +208,80 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 24,
     marginBottom: 20, // Space between text and button
+  },
+  card: {
+    fontFamily: 'Arial',  // Use system font
+    backgroundColor: '#639E5C',
+    padding: 20,
+    marginVertical: 10,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+  },
+  expandedCard: {
+    fontFamily: 'Arial',  // Use system font
+    backgroundColor: '#639E5C',
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    marginVertical: 10,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#f0f0f0',
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: '#f0f0f0',
+    marginTop: 5,
+    marginBottom: 5,
+  },
+  cardCapacity: {
+    fontSize: 12,
+    color: '#f0f0f0',
+    marginRight: 5,
+    fontWeight: 'bold',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardCapacityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  collapseButton: {
+    marginTop: 10,
+    backgroundColor: '#333',
+  },
+  collapseButtonContainer: {
+    alignSelf: 'flex-start',  // Align the button to the left
+    marginTop: 5,
+  },
+  joinButton: {
+    backgroundColor: '#f0f0f0',  // Light gray background
+    paddingVertical: 5,          // Smaller vertical padding
+    paddingHorizontal: 10,       // Standard horizontal padding
+    borderRadius: 5,             // Rounded corners
+    alignSelf: 'flex-start',     // Align the button to the left
+    marginVertical: 5,
+  },
+  joinButtonText: {
+    color: '#639E5C',            // Green text color
+    fontSize: 12,                // Smaller font size
+    fontWeight: 'bold',
   },
 });
