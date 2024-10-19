@@ -33,6 +33,8 @@ export default function SignUpScreen() {
       }
       if (response.status === 200) {
         Alert.alert("Success", response.data.message);
+        setEmail('');
+        setPassword('');
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -46,7 +48,7 @@ export default function SignUpScreen() {
     }
     try {
       // Make a POST request to your Express server
-      const response = await axios.post(`http://localhost:5000/user/signup`, {
+      const response = await axios.post(`http://localhost:5000/user/login`, {
         loginEmail,
         loginPassword,
       });
@@ -54,6 +56,8 @@ export default function SignUpScreen() {
       // Handle the response from the backend
       if (response.status === 200) {
         Alert.alert("Success", response.data.message);
+        setLoginEmail('');
+        setLoginPassword('');
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -86,6 +90,7 @@ export default function SignUpScreen() {
           placeholder="Password"
           placeholderTextColor="#888"
           value={password}
+          secureTextEntry={true} 
           onChangeText={setPassword}
         />
         <Button onPress={handleSignUp} style={styles.button}>
@@ -109,6 +114,7 @@ export default function SignUpScreen() {
           placeholder="Password"
           placeholderTextColor="#888"
           value={loginPassword}
+          secureTextEntry={true} 
           onChangeText={setLoginPassword}
         />
         <Button onPress={handleLogin} style={styles.button}>
