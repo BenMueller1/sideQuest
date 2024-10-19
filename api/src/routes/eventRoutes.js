@@ -48,4 +48,19 @@ router.post("/embark", async (req, res) => {
   }
 });
 
+router.get("/embarkations/:eventId", async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const result = await prisma.embarkation.count({
+      where: {
+        eventId: parseInt(eventId),
+      },
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;

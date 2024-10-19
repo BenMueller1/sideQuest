@@ -51,4 +51,20 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/embarkations/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await prisma.embarkation.findMany({
+      where: {
+        userId: parseInt(userId),
+      },
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;
