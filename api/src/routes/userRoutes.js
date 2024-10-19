@@ -23,8 +23,9 @@ router.post("/signup", async (req, res) => {
       res.status(409).json({
         error: "There is already an account associated with this email.",
       });
+    } else {
+      res.status(400).json({ error: error.message });
     }
-    res.status(400).json({ error: error.message });
   }
 });
 
