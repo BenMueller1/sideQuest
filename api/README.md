@@ -11,3 +11,9 @@
    ```bash
     npm run serve
    ```
+
+## To migrate schema changes to the database
+
+    ```bash
+    npx prisma migrate dev --name init
+    ```

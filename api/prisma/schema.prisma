@@ -21,28 +21,20 @@ model User {
   createdAt DateTime @default(now())
   age Int
   gender String
-  location Location @relation(fields: [locationId], references: [id])
-  locationId Int
+  latitude Float
+  longitude Float
   interests Interest[] @relation("UserInterests")
 }
 
 model Event {
   id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
   title String
   description String
-  location Location @relation(fields: [locationId], references: [id])
-  locationId Int
-  capacity Int
-  
-}
-
-model Location {
-  id Int @id @default(autoincrement())
-  name String
   latitude Float
   longitude Float
-  events Event[]
-  users User[]
+  capacity Int
+  interests Interest[] @relation("EventInterests")
 }
 
 model Interest {
@@ -50,5 +42,6 @@ model Interest {
     name String
     description String
     users User[] @relation("UserInterests")
+    events Event[] @relation("EventInterests")
 }
 
