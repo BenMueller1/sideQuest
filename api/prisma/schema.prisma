@@ -12,3 +12,43 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id Int @id @default(autoincrement())
+  googleId  String  @unique
+  email     String  @unique
+  name      String
+  createdAt DateTime @default(now())
+  age Int
+  gender String
+  location Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  interests Interest[] @relation("UserInterests")
+}
+
+model Event {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  location Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  capacity Int
+  
+}
+
+model Location {
+  id Int @id @default(autoincrement())
+  name String
+  latitude Float
+  longitude Float
+  events Event[]
+  users User[]
+}
+
+model Interest {
+    id Int @id @default(autoincrement())
+    name String
+    description String
+    users User[] @relation("UserInterests")
+}
+
