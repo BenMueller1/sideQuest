@@ -1,8 +1,9 @@
 import { StyleSheet, FlatList, View, Modal } from "react-native";
 import { EventType } from "../../assets/types/Event";
 import { events } from "../../assets/dummy";
-import { Button, Card, Text } from "tamagui"; // or '@tamagui/core'
+import { Card, Text, Button, Input, XStack, H4, YStack, TextArea} from "tamagui"; // or '@tamagui/core'
 import { SafeAreaView } from "react-native-safe-area-context";
+import PlacesAutocomplete from "@/components/PlacesAutoComplete";
 import { useState } from "react";
 
 const renderItem = ({ item }: { item: EventType }) => {
@@ -17,6 +18,18 @@ const renderItem = ({ item }: { item: EventType }) => {
 
 export default function HomeScreen() {
   const [isOpen, setIsOpen] = useState(false);
+  const [eventName, setEventName] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+
+  const handleSubmit = () => {
+    // Handle form submission
+    console.log("Event Name:", eventName);
+    console.log("Event Location:", eventLocation);
+    // Optionally reset the fields
+    setEventName('');
+    setEventLocation('');
+    setIsOpen(false); // Close the modal after submission
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,16 +52,40 @@ export default function HomeScreen() {
       </Button>
 
       <Modal
-        transparent={true}
+        transparent={false}
         visible={isOpen}
         onRequestClose={() => setIsOpen(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Hello World!</Text>
-            <Button onPress={() => setIsOpen(false)}>
-              <Text>Close</Text>
-            </Button>
+            <Text style={styles.modalText}>Create New Event</Text>
+            
+            <YStack>
+              <XStack flexWrap="wrap">
+                <H4 size={25} themeInverse>I want to </H4> 
+                <Input
+                  style={styles.modalInput}
+                  placeholder="slay dragons"
+                  value={eventName}
+                  onChangeText={setEventName}
+                />
+                <H4 size = {25} themeInverse> at </H4>
+                <Input
+                  style={styles.modalInput}
+                  placeholder="The Castle"
+                  value={eventLocation}
+                  onChangeText={setEventLocation}
+                />
+
+                <PlacesAutocomplete></PlacesAutocomplete>
+                
+              </XStack>
+              
+              <TextArea style= {styles.modalTextArea} placeholder="Enter more details..."></TextArea>
+            </YStack>
+            
+
+            <Button onPress={handleSubmit}> Post Quest!</Button>
           </View>
         </SafeAreaView>
       </Modal>
@@ -74,9 +111,9 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "center", // Center content vertically
-    alignItems: "center", // Center content horizontally
-    backgroundColor: "white", // Set a background color for visibility
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
   },
   modalContent: {
     padding: 20,
@@ -84,6 +121,13 @@ const styles = StyleSheet.create({
   },
   modalText: {
     fontSize: 24,
-    marginBottom: 20, // Space between text and button
+    marginBottom: 20,
   },
+  modalInput: {
+    padding: 0,
+    transform: [{ translateY: -5 }],
+  }, modalTextArea : {
+    backgroundColor: "#8A5A08",
+  }
+  
 });
