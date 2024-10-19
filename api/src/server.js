@@ -1,5 +1,6 @@
 const express = require("express");
 const eventRoutes = require("./routes/eventRoutes");
+require("./cron/jobs");
 
 const app = express();
 
