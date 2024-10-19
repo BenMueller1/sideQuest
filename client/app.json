@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shawnzhu03.sideQuest"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +35,11 @@
     },
     "extra": {
       "eas": {
+<<<<<<< HEAD
         "projectId": "3151bf7f-19a0-40d1-b7f3-66c79b72f5c3"
+=======
+        "projectId": "8bc6e7b9-445b-48c0-913c-77e8004914b6"
+>>>>>>> f7adebf0a421de49d38992233f7b9115409b3509
       }
     }
   }
