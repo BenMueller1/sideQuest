@@ -10,6 +10,7 @@ module.exports = function(api) {
         config: './tamagui.config.ts',
         logTimings: true
       }],
+      ['module:react-native-dotenv'],
       ['transform-inline-environment-variables', {
         include: 'TAMAGUI_TARGET',
       }],
