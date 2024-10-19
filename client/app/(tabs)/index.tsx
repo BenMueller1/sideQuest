@@ -9,34 +9,6 @@ import axios from "axios";
 import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-icons
 
 
-// const renderItem = ({ item }: { item: EventType }) => {
-//   return (
-//     <Card 
-//       elevate 
-//       bordered 
-//       padding="$4" 
-//       backgroundColor="$backgroundStrong" 
-//       style={styles.card}
-//     >
-//       <Card.Header padded>
-//         <Text fontSize="$6" fontWeight="700">{item.title}</Text>
-//       </Card.Header>
-//       <Text fontSize="$4" color="$color" marginBottom="$2">
-//         {item.description}
-//       </Text>
-//       <Text fontSize="$3" color="$colorMuted">
-//         Capacity: {item.capacity}
-//       </Text>
-//       <Card.Footer>
-//         <Button marginTop="$2">
-//           Join Event
-//         </Button>
-//       </Card.Footer>
-//     </Card>
-//   );
-// };
-
-
 const BACKEND_URL = "http://localhost:5001";
 
 export default function HomeScreen() {
@@ -81,6 +53,11 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  // const { userId, eventId, timeslots } = req.body;
+  // const joinEvent = async (eventId: number) => {
+
+  // })
 
   // Render each event card
   const renderExpandedItem = ({ item }: { item: EventType }) => {
