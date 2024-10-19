@@ -13,15 +13,11 @@ async function hashPassword(plainPassword) {
 async function verifyPassword(plainPassword, hashedPassword) {
   try {
     const match = await bcrypt.compare(plainPassword, hashedPassword);
-    if (match) {
-      console.log("Password is correct!");
-    } else {
-      console.log("Password is incorrect!");
-    }
+
     return match;
   } catch (error) {
     console.error("Error verifying password:", error);
   }
 }
 
-module.exports = { hashPassword };
+module.exports = { hashPassword, verifyPassword };

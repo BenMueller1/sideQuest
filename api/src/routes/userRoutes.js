@@ -1,6 +1,6 @@
 const express = require("express");
 const prisma = require("./../models/index");
-const { hashPassword } = require("./../util/userFunctions");
+const { hashPassword, verifyPassword } = require("./../util/userFunctions");
 
 const router = express.Router();
 
@@ -28,8 +28,26 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// router.post("/login", async (req, res) => {
-//     const {email, }
-// })
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!result) {
+      res.status(404).json({ error: "User with this email not found." });
+    }
+
+    if (verifyPassword(password, result.hashed_password)) {
+      res.sendStatus(200);
+    } else {
+      res.status(403).json({ error: "Incorrect password." });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 module.exports = router;
