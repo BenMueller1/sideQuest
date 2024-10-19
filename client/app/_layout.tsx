@@ -4,9 +4,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { TamaguiProvider } from 'tamagui'
-
-import config from './tamagui.config'
-
+import * as themes from '../theme-output'
+import config from '../tamagui.config'
 
 import 'react-native-reanimated';
 
@@ -23,6 +22,7 @@ export default function RootLayout() {
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
     InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
   });
+
 
   useEffect(() => {
     if (loaded) {
@@ -41,6 +41,5 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
     </TamaguiProvider>
->
   );
 }
