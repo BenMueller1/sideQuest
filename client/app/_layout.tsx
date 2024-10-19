@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { TamaguiProvider } from 'tamagui'
 
-import config from './tamagui.config'
+import config from '../tamagui.config'
 
 
 import 'react-native-reanimated';
@@ -41,6 +41,5 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
     </TamaguiProvider>
->
   );
 }
