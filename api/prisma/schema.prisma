@@ -15,15 +15,18 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
-  googleId  String  @unique
   email     String  @unique
-  name      String
+  hashed_password String
+  username      String
+  name String
   createdAt DateTime @default(now())
   age Int
   gender String
   latitude Float
   longitude Float
   interests Interest[] @relation("UserInterests")
+  embarkations Embarkation[]
+  groups Group[] @relation("UserGroups")
 }
 
 model Event {
@@ -35,13 +38,30 @@ model Event {
   longitude Float
   capacity Int
   interests Interest[] @relation("EventInterests")
+  embarkations Embarkation[]
+  groups Group[]
 }
 
 model Interest {
-    id Int @id @default(autoincrement())
-    name String
-    description String
-    users User[] @relation("UserInterests")
-    events Event[] @relation("EventInterests")
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  users User[] @relation("UserInterests")
+  events Event[] @relation("EventInterests")
+}
+
+model Embarkation {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  event Event @relation(fields: [eventId], references: [id])
+  eventId Int
+}
+
+model Group {
+  id Int @id @default(autoincrement())
+  event Event @relation(fields: [eventId], references: [id])
+  eventId Int
+  users User[] @relation("UserGroups")
 }
 
