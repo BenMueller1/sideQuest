@@ -1,34 +1,66 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, Alert, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Button, Theme, H3, SizableText} from 'tamagui';
-
+import axios from 'axios';
+// import 'dotenv/config';
 
 export default function SignUpScreen() {
-  const [username, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [loginUsername, setLoginEmail] = useState<string>(''); // New state for login email
+  const [loginEmail, setLoginEmail] = useState<string>(''); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(''); // New state for login password
 
-  const handleSignUp = (): void => {
-    if (!username || !email || !password) {
+  const handleSignUp = async (): Promise<void> => {
+    if (!email || !password) {
       Alert.alert('Error', 'All fields are required!');
+      return;
     } else if (!validateEmail(email)) {
       Alert.alert('Error', 'Please enter a valid email!');
-    } else { //gotta check username not already taken in backend
-      Alert.alert('Success', 'You have signed up!');
+      return;
     }
+    try {
+        // Make a POST request to your Express server
+        const response = await axios.post(`http://localhost:5000/user/signup`, {
+          email,
+          password,
+        });
+    
+        // Handle the response from the backend
+        if(response.status === 409) {
+            Alert.alert("Error", 'This email already exists.');
+        }
+        if (response.status === 200) {
+          Alert.alert('Success', response.data.message);
+        }
+      } catch (error) {
+        // Handle any errors from the server or network
+        Alert.alert('Error', 'An error occurred during sign-up.');
+      }
   };
-  const handleLogin = (): void => {
-    if (!loginUsername || !loginPassword) {
+  const handleLogin = async (): Promise<void> => {
+    if (!loginEmail || !loginPassword) {
       Alert.alert('Error', 'Email and password are required!');
+      return;
     }
-    else {
-      Alert.alert('Success', 'You have logged in!');
-    }
+    try {
+        // Make a POST request to your Express server
+        const response = await axios.post(`http://localhost:5000/user/signup`, {
+          loginEmail,
+          loginPassword,
+        });
+    
+        // Handle the response from the backend
+        if (response.status === 200) {
+          Alert.alert('Success', response.data.message);
+        }
+      } catch (error) {
+        // Handle any errors from the server or network
+        Alert.alert('Error', 'An error occurred during sign-up.');
+      }
   };
+
+
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,13 +84,6 @@ export default function SignUpScreen() {
             />
             <TextInput
                 style={styles.input}
-                placeholder="Username"
-                placeholderTextColor="#888"
-                value={username}
-                onChangeText={setName}
-            />
-            <TextInput
-                style={styles.input}
                 placeholder="Password"
                 placeholderTextColor="#888"
                 value={password}
@@ -75,7 +100,7 @@ export default function SignUpScreen() {
             style={styles.input}
             placeholder="Username"
             placeholderTextColor="#888"
-            value={loginUsername}
+            value={loginEmail}
             onChangeText={setLoginEmail}
             />
             <TextInput
