@@ -1,7 +1,8 @@
-export type Interest = {
+export type InterestType = {
     id: number;
     name: string;
-  };
+    description: string;
+};
   
 export type EventType = {
     id: number;
@@ -11,5 +12,5 @@ export type EventType = {
     latitude: number;
     longitude: number;
     capacity: number;
-    interests: Interest[];
+    interests: InterestType[];
 };

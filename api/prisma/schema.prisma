@@ -24,6 +24,7 @@ model User {
   about String?
   latitude Float?
   longitude Float?
+  personaEmbedding Float[]
   interests Interest[] @relation("UserInterests")
   embarkations Embarkation[]
   groups Group[] @relation("UserGroups")
@@ -46,6 +47,7 @@ model Interest {
   id Int @id @default(autoincrement())
   name String
   description String
+  embedding Float[]
   users User[] @relation("UserInterests")
   events Event[] @relation("EventInterests")
 }
@@ -63,5 +65,15 @@ model Group {
   event Event @relation(fields: [eventId], references: [id])
   eventId Int
   users User[] @relation("UserGroups")
+}
+
+model Question {
+  id Int @id @default(autoincrement())
+  questionNumber Int
+  question String
+  option1 String
+  option2 String
+  option3 String
+  option4 String
 }
 

@@ -22,6 +22,9 @@ async function matchingService() {
     const embarkations = await prisma.embarkations.findMany();
 
     const eventSignups = bucketByEvent(embarkations);
+
+    for (let eventEmbarkments of eventSignups) {
+    }
   } catch (error) {
     console.error(error.message);
   }
