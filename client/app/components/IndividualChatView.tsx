@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Message } from '@/assets/types/Message';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,23 +10,26 @@ import { FontAwesome } from '@expo/vector-icons'; // Import for X icon
 
 
 const BACKEND_URL = "http://localhost:5001";
-const socket = io(BACKEND_URL);
 
 
 type IndividualChatViewProps = {
   currentGroupChat: Group;
   onBackPress?: () => void;
+  randomKey: number;
 }
 
 export default function IndividualChatView({
   currentGroupChat,
   onBackPress,
+  randomKey
 }: IndividualChatViewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const userId = (useAuth()).userId;
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+
+  const socketRef = useRef<any>(null); // useRef for persistent socket instance
 
 
   // TODO i should be querying for messages from backend on this initial load!
@@ -51,13 +54,17 @@ export default function IndividualChatView({
   // load in all usernames after messages populates
   useEffect(() => {
     const loadUsernames = async () => {
-      console.log("bm - message userids", messages.map(msg => msg.userId));
+      // console.log("bm - message userids", messages.map(msg => msg.userId));
 
       // Fetch usernames
       const userIds = Array.from(new Set(messages.map(msg => msg.userId)));
       const usernamePromises = userIds.map(async usrId => {
+        // console.log('bm - querying for user id:', usrId);
+        // console.log('bm - userId:', userId);
         if (usrId === parseInt(userId ?? "-1")) {
           return { userId: usrId, name: 'You' };
+        } else if (!usrId) {
+          return { userId: usrId, name: 'Unknown User' };
         } else {
           const response = await axios.get(BACKEND_URL + `/user/${usrId}`);
           return { userId: usrId, name: response.data.name ?? 'Unknown User' };
@@ -66,7 +73,7 @@ export default function IndividualChatView({
 
       const usernameResults = await Promise.all(usernamePromises);
 
-      console.log('bm - username results:', JSON.stringify(usernameResults));
+      // console.log('bm - username results:', JSON.stringify(usernameResults));
 
       const usernameMap: { [key: string]: string } = {};
 
@@ -76,7 +83,7 @@ export default function IndividualChatView({
         }
       }
 
-      console.log('bm - setting username map to ', JSON.stringify(usernameMap));
+      // console.log('bm - setting username map to ', JSON.stringify(usernameMap));
 
       setUsernames(usernameMap);
     }
@@ -87,17 +94,16 @@ export default function IndividualChatView({
     const loadData = async () => {
       await loadMessages();
       
-
-      
       setIsLoading(false);
     }
     loadData();
+    socketRef.current = io(BACKEND_URL);
 
     // set up socket on initial load
     console.log('bm - individual_chat_view: Connecting to socket - roomId: ', currentGroupChat.id);
-    socket.emit('join_room', currentGroupChat.id);
+    socketRef.current.emit('join_room', currentGroupChat.id);
 
-    socket.on('receive_message', (message) => {
+    socketRef.current.on('receive_message', (message) => {
       console.log('bm - individual_chart_vieww: Received message:', message);
       console.log('bm - individual_chat_view: setting messages to:', JSON.stringify([...messages, message]));
       setMessages((prevMessages) => [...prevMessages, message]);
@@ -105,10 +111,10 @@ export default function IndividualChatView({
   
     // clean up socket (no memory leaks)
     return () => {
-      socket.off('receive_message');
-      socket.disconnect();
+      socketRef.current.off('receive_message');
+      socketRef.current.disconnect();
     };
-  }, [currentGroupChat]) // TODO usernames only disaply after we delete "currentGroupChat" from this array 
+  }, [currentGroupChat, randomKey]) // TODO usernames only disaply after we delete "currentGroupChat" from this array 
 
   const sendMessage = async () => {
     if (messageText.trim() === '') return;  // Don't send empty messages
@@ -121,7 +127,7 @@ export default function IndividualChatView({
     // const resultData = result.data;
 
     console.log(`bm - individual_chat_view: Sending message:, \n - userId: ${userId} \n - groupId: ${currentGroupChat.id} \n - messageText: ${messageText}`);
-    socket.emit('send_message', {
+    socketRef.current.emit('send_message', {
       content: messageText,
       senderId: userId,
       groupId: currentGroupChat.id,

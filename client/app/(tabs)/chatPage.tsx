@@ -127,6 +127,8 @@ export default function ChatPage() {
         <IndividualChatView 
           currentGroupChat={selectedChat}
           onBackPress={handleBackFromChatButtonPress}
+          // generate a random number key to force re-rendering of the chat view
+          randomKey={Math.random()}
         />
       </SafeAreaView>
     )

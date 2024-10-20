@@ -28,6 +28,27 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// get a group
+router.get("/:groupId", async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const result = await prisma.group.findUnique({
+      where: {
+        id: parseInt(groupId),
+      },
+      include: {
+        users: true,
+        messages: true,
+      }
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
+
 // get all messages from a group
 router.get("/messages/:groupId", async (req, res) => {
   const { groupId } = req.params;
