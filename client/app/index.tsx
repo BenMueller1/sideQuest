@@ -17,7 +17,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState<string>("");
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
-  const {login} = useAuth();
+  const { login } = useAuth();
 
   const [showQuizInstructions, setShowQuizInstructions] =
     useState<boolean>(false);
@@ -26,6 +26,8 @@ export default function SignUpScreen() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [questionNum, setQuestionNum] = useState<number>(0);
   const [answers, setAnswers] = useState<AnswerDictionary>({});
+
+  const [userId, setUserId] = useState<number | undefined>(undefined);
 
   const handleSignUp = async (): Promise<void> => {
     if (!email || !password) {
@@ -52,8 +54,7 @@ export default function SignUpScreen() {
         setPassword("");
         handleQuiz();
         login(response.data.id);
-        router.replace("/(tabs)");
-
+        handleQuiz();
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -81,7 +82,7 @@ export default function SignUpScreen() {
         setLoginPassword("");
         login(response.data.id);
         router.replace("/(tabs)");
-        
+
         // handleQuiz();
       } else {
         setLoginEmail("");
@@ -125,7 +126,7 @@ export default function SignUpScreen() {
     if (showQuizResults) {
       const submitQuizResults = async () => {
         const response = await axios.post(`http://localhost:5001/user/quiz`, {
-          userId: 1,
+          userId: userId,
           answers,
         });
       };
@@ -172,7 +173,7 @@ export default function SignUpScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor="#888"
           value={loginEmail}
           onChangeText={setLoginEmail}
@@ -273,6 +274,7 @@ const styles = StyleSheet.create({
   },
   separatorText: {
     marginHorizontal: 10,
+    color: "#324C30",
   },
   modalContainer: {
     flex: 1,

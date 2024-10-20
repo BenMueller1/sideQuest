@@ -1,4 +1,14 @@
-import { StyleSheet, FlatList, View, Modal, Text, Button, TouchableOpacity, Touchable, Pressable } from "react-native";
+import {
+  StyleSheet,
+  FlatList,
+  View,
+  Modal,
+  Text,
+  Button,
+  TouchableOpacity,
+  Touchable,
+  Pressable,
+} from "react-native";
 import { EventType, InterestType } from "../../assets/types/Event";
 import { EmbarkationType } from "../../assets/types/Embarkation";
 import { events } from "../../assets/dummy";
@@ -12,17 +22,21 @@ import {
   ScrollView,
   Image,
 } from "tamagui"; // or '@tamagui/core'
-import type { CardProps } from 'tamagui'
-import { Button as TamaGuiButton, Text as TamaGuiText, View as TamaGuiView } from 'tamagui'
+import type { CardProps } from "tamagui";
+import {
+  Button as TamaGuiButton,
+  Text as TamaGuiText,
+  View as TamaGuiView,
+} from "tamagui";
 import { SafeAreaView } from "react-native-safe-area-context";
 // import { PlacesAutoComplete } from "@/components/PlacesAutoComplete";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-icons
+import { FontAwesome } from "@expo/vector-icons"; // Import from @expo/vector-icons
 
 import { PlaceSuggestion } from "@/assets/types/PlaceSuggestions";
 import AutoCompleteInput from "@/components/AutoCompleteInput";
-import {useAuth} from '../../hooks/useAuth'
+import { useAuth } from "../../hooks/useAuth";
 
 const BACKEND_URL = "http://localhost:5001";
 type Location = {
@@ -40,14 +54,17 @@ type Location = {
 // };
 
 export default function HomeScreen() {
-  const {userId} = useAuth();
+  const { userId } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<EventType[]>([]);
   // null means no event is currently extended
   const [extendedEventId, setExtendedEventId] = useState<number | null>(null);
-  const [isUserEnrolledInSelectedEvent, setIsUserEnrolledInSelectedEvent] = useState(false);
-  const [currentUserEmbarkations, setCurrentUserEmbarkations] = useState<EmbarkationType[]>([]);
+  const [isUserEnrolledInSelectedEvent, setIsUserEnrolledInSelectedEvent] =
+    useState(false);
+  const [currentUserEmbarkations, setCurrentUserEmbarkations] = useState<
+    EmbarkationType[]
+  >([]);
 
   //states for new event
   const [eventName, setEventName] = useState("");
@@ -61,11 +78,13 @@ export default function HomeScreen() {
       const response = await axios.get(BACKEND_URL + "/events/all");
       const responseData = response.data;
       const eventsFromResponse = responseData.map((event: any) => {
-      const interests = responseData.interests?.map((interest: any): InterestType => ({
-        id: interest?.id,
-        name: interest?.name,
-        description: interest?.description,
-      }));
+        const interests = responseData.interests?.map(
+          (interest: any): InterestType => ({
+            id: interest?.id,
+            name: interest?.name,
+            description: interest?.description,
+          })
+        );
         return {
           id: event.id,
           createdAt: event.createdAt ?? null,
@@ -75,28 +94,30 @@ export default function HomeScreen() {
           longitude: event.longitude ?? 0,
           capacity: event.capacity ?? 5,
           interests: event.interests ?? [],
-        }
+        };
       });
       setEvents(eventsFromResponse);
     } catch (error) {
-      console.error('Error:', error);  // Handle any errors
+      console.error("Error:", error); // Handle any errors
     }
   }
 
   async function fetchEmbarkations() {
     try {
-      const response = await axios.get(BACKEND_URL + `/user/embarkations/${userId}`);
+      const response = await axios.get(
+        BACKEND_URL + `/user/embarkations/${userId}`
+      );
       const responseData = response.data;
       const embarkationsFromResponse = responseData.map((embarkation: any) => {
         return {
           id: embarkation.id,
           userId: embarkation.userId,
           eventId: embarkation.eventId,
-        }
+        };
       });
       setCurrentUserEmbarkations(embarkationsFromResponse);
     } catch (error) {
-      console.error('Error:', error);  // Handle any errors
+      console.error("Error:", error); // Handle any errors
     }
   }
 
@@ -106,25 +127,29 @@ export default function HomeScreen() {
       await fetchEvents();
       await fetchEmbarkations();
       setIsLoading(false);
-    }
+    };
     fetchData();
   }, []);
-
 
   // check whether the user is enrolled in the selected event
   useEffect(() => {
     if (extendedEventId) {
-      setIsUserEnrolledInSelectedEvent(currentUserEmbarkations.some((embarkation) => embarkation.eventId === extendedEventId));
+      setIsUserEnrolledInSelectedEvent(
+        currentUserEmbarkations.some(
+          (embarkation) => embarkation.eventId === extendedEventId
+        )
+      );
     }
   }, [extendedEventId, currentUserEmbarkations, events]);
-
 
   // Render each event card
   const renderExpandedItem = ({ item }: { item: EventType }) => {
     return (
-      <TouchableOpacity onPress={() => {
-        setExtendedEventId(null);
-      }}>
+      <TouchableOpacity
+        onPress={() => {
+          setExtendedEventId(null);
+        }}
+      >
         <View style={styles.expandedCard}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -137,9 +162,15 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.joinButton}
-            onPress={() => isUserEnrolledInSelectedEvent ? unjoinEvent(item.id) : joinEvent(item.id)}
+            onPress={() =>
+              isUserEnrolledInSelectedEvent
+                ? unjoinEvent(item.id)
+                : joinEvent(item.id)
+            }
           >
-            <Text style={styles.joinButtonText}>{isUserEnrolledInSelectedEvent ? ("Unjoin") : ("Join")}</Text>
+            <Text style={styles.joinButtonText}>
+              {isUserEnrolledInSelectedEvent ? "Unjoin" : "Join"}
+            </Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -148,21 +179,23 @@ export default function HomeScreen() {
 
   const renderItem = ({ item }: { item: EventType }) => {
     return (
-      <TouchableOpacity onPress={() => {
-        setExtendedEventId(item.id);
-      }}>
+      <TouchableOpacity
+        onPress={() => {
+          setExtendedEventId(item.id);
+        }}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             <View style={styles.cardCapacityContainer}>
               <Text style={styles.cardCapacity}>{item.capacity}</Text>
-              <FontAwesome name="user" size={16} color="#f0f0f0" /> 
+              <FontAwesome name="user" size={16} color="#f0f0f0" />
             </View>
           </View>
         </View>
       </TouchableOpacity>
     );
-  }
+  };
 
   const renderListItem = ({ item }: { item: EventType }) => {
     if (item.id === extendedEventId) {
@@ -170,19 +203,23 @@ export default function HomeScreen() {
     } else {
       return renderItem({ item });
     }
-  }
+  };
 
   const unjoinEvent = async (eventId: number) => {
     try {
-      const emarkIdToDelete = currentUserEmbarkations.find((embarkation) => embarkation.eventId === eventId)?.id;
-      const response = await axios.delete(BACKEND_URL + `/events/embark/${emarkIdToDelete}`)
+      const emarkIdToDelete = currentUserEmbarkations.find(
+        (embarkation) => embarkation.eventId === eventId
+      )?.id;
+
+      const response = await axios.delete(
+        BACKEND_URL + `/events/embark/${emarkIdToDelete}`
+      );
 
       fetchEmbarkations();
-
     } catch (error) {
-      console.error('Error:', error);  // Handle any errors
+      console.error("Error:", error); // Handle any errors
     }
-  }
+  };
 
   const joinEvent = async (eventId: number) => {
     try {
@@ -190,15 +227,15 @@ export default function HomeScreen() {
         userId,
         eventId,
       });
-      
+
       fetchEmbarkations();
     } catch (error) {
-      console.error('Error:', error);  // Handle any errors
+      console.error("Error:", error); // Handle any errors
     }
-  }
+  };
 
-//posts new event
-  const handleSubmit = async() => {
+  //posts new event
+  const handleSubmit = async () => {
     // Handle form submission
     console.log("Event Name:", eventName);
     console.log("Event Location:", eventLocation);
@@ -210,22 +247,27 @@ export default function HomeScreen() {
     setEventLocation(undefined);
     setEventDetails("");
     setIsOpen(false); // Close the modal after submission
-    
   };
 
   async function submitEvent() {
     try {
-      const body = {title: eventName, description: eventDetails, latitude: eventLocation?.lat, longitude: eventLocation?.lng, capacity: 5};
+      const body = {
+        title: eventName,
+        description: eventDetails,
+        latitude: eventLocation?.lat,
+        longitude: eventLocation?.lng,
+        capacity: 5,
+      };
       const response = await axios.post(BACKEND_URL + `/events/create/`, body);
       const responseData = response.data;
-      console.log(response)
+      console.log(response);
     } catch (error) {
-      console.error('Error:', error);  // Handle any errors
+      console.error("Error:", error); // Handle any errors
     }
   }
 
   if (isLoading) {
-    return null; 
+    return null;
   }
 
   return (
@@ -253,7 +295,18 @@ export default function HomeScreen() {
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TamaGuiButton marginLeft='auto' circular borderBlockColor={'black'} onPress={()=> setIsOpen(false)}><Image width={30} height={30} source={require('../../assets/images/cross.png')}></Image></TamaGuiButton>
+            <TamaGuiButton
+              marginLeft="auto"
+              circular
+              borderBlockColor={"black"}
+              onPress={() => setIsOpen(false)}
+            >
+              <Image
+                width={30}
+                height={30}
+                source={require("../../assets/images/cross.png")}
+              ></Image>
+            </TamaGuiButton>
             <TamaGuiView height={30}></TamaGuiView>
 
             <YStack>
@@ -271,8 +324,10 @@ export default function HomeScreen() {
                   {" "}
                   at{" "}
                 </H4>
-                <AutoCompleteInput updateEventLocation={setEventLocation} updateEventPlace={setEventPlace}/>
-               
+                <AutoCompleteInput
+                  updateEventLocation={setEventLocation}
+                  updateEventPlace={setEventPlace}
+                />
               </XStack>
 
               <TextArea
@@ -286,7 +341,6 @@ export default function HomeScreen() {
           </View>
         </SafeAreaView>
       </Modal>
-      
     </SafeAreaView>
   );
 }
@@ -328,31 +382,31 @@ const styles = StyleSheet.create({
   modalTextArea: {
     backgroundColor: "#8A5A08",
     minWidth: 300,
-    marginBottom: 30
+    marginBottom: 30,
   },
   card: {
-    fontFamily: 'Arial',  // Use system font
-    backgroundColor: '#639E5C',
+    fontFamily: "Arial", // Use system font
+    backgroundColor: "#639E5C",
     padding: 20,
     marginVertical: 10,
     marginHorizontal: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3, // Android shadow
   },
   expandedCard: {
-    fontFamily: 'Arial',  // Use system font
-    backgroundColor: '#639E5C',
+    fontFamily: "Arial", // Use system font
+    backgroundColor: "#639E5C",
     paddingTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 10,
     marginVertical: 10,
     marginHorizontal: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -360,49 +414,49 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#f0f0f0',
+    fontWeight: "bold",
+    color: "#f0f0f0",
   },
   cardDescription: {
     fontSize: 14,
-    color: '#f0f0f0',
+    color: "#f0f0f0",
     marginTop: 5,
     marginBottom: 5,
   },
   cardCapacity: {
     fontSize: 12,
-    color: '#f0f0f0',
+    color: "#f0f0f0",
     marginRight: 5,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   cardCapacityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   collapseButton: {
     marginTop: 10,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   collapseButtonContainer: {
-    alignSelf: 'flex-start',  // Align the button to the left
+    alignSelf: "flex-start", // Align the button to the left
     marginTop: 5,
   },
   joinButton: {
-    backgroundColor: '#f0f0f0',  // Light gray background
-    paddingVertical: 5,          // Smaller vertical padding
-    paddingHorizontal: 10,       // Standard horizontal padding
-    borderRadius: 5,             // Rounded corners
-    alignSelf: 'flex-start',     // Align the button to the left
+    backgroundColor: "#f0f0f0", // Light gray background
+    paddingVertical: 5, // Smaller vertical padding
+    paddingHorizontal: 10, // Standard horizontal padding
+    borderRadius: 5, // Rounded corners
+    alignSelf: "flex-start", // Align the button to the left
     marginVertical: 5,
   },
   joinButtonText: {
-    color: '#639E5C',            // Green text color
-    fontSize: 12,                // Smaller font size
-    fontWeight: 'bold',
+    color: "#639E5C", // Green text color
+    fontSize: 12, // Smaller font size
+    fontWeight: "bold",
   },
 });
