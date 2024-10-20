@@ -33,7 +33,7 @@ async function fetchUser(userId){
 }
 
 // get a user by id
-router.get("/:userId", async (req, res) => {
+router.get("/getUser/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
@@ -261,6 +261,8 @@ router.post("/edit", async (req, res) => {
 
 router.get("/interests", async (req, res) => {
   try {
+    console.log('bm - getting interests');
+    
     const result = await prisma.interest.findMany({
       select: {
         id: true,
@@ -268,6 +270,9 @@ router.get("/interests", async (req, res) => {
         description: true,
       },
     });
+
+    console.log('bm - interests: ')
+
     res.status(200).json(result);
   } catch (error) {
     res.status(401).json({ error: error.message });

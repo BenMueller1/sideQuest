@@ -68,7 +68,7 @@ export default function IndividualChatView({
         } else if (!usrId) {
           return { userId: usrId, name: 'Unknown User' };
         } else {
-          const response = await axios.get(BACKEND_URL + `/user/${usrId}`);
+          const response = await axios.get(BACKEND_URL + `/user/getUser/${usrId}`);
           return { userId: usrId, name: response.data.name ?? 'Unknown User' };
         }
       });
@@ -193,7 +193,7 @@ export default function IndividualChatView({
       <View style={styles.header}>
         <Text style={styles.groupTitle}>{currentGroupChat.event.title}</Text>
         <TouchableOpacity onPress={onBackPress}>
-          <FontAwesome name="times" size={24} color="black" />  {/* X icon */}
+          <FontAwesome name="times" size={24} color="#fefefe" />  {/* X icon */}
         </TouchableOpacity>
       </View>
 
@@ -229,20 +229,21 @@ export default function IndividualChatView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F5F5',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',  // Ensures title is on the left and X button on the right
     alignItems: 'center',
     padding: 15,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#324C30',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   groupTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: `#F5F5F5`
   },
   messagesList: {
     padding: 10,
@@ -257,6 +258,7 @@ const styles = StyleSheet.create({
   messageUser: {
     fontWeight: 'bold',
     fontSize: 14,
+    color: `#639E5C`
   },
   messageTime: {
     fontSize: 12,
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#639E5C',
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 15,
