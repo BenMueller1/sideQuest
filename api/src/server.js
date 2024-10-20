@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const eventRoutes = require("./routes/eventRoutes");
 const userRoutes = require("./routes/userRoutes");
+require('dotenv').config();
 require("./cron/jobs");
 require('dotenv').config();
 

@@ -1,12 +1,32 @@
 const e = require("express");
 const express = require("express");
-const { default: haversineDistance } = require("../util/haversineDist");
-const distanceFunction = require("../util/haversineDist");
+// const { haversineDistance } = require("../util/haversineDist");
+const haversineDistance = require("../util/haversineDist");
+// const distanceFunction = require("../util/haversineDist");
 const prisma = require("./../models/index");
 const { hashPassword, verifyPassword } = require("./../util/userFunctions");
 const { embed } = require("../util/eventEmbeddings");
 
 const router = express.Router();
+
+async function fetchUser(userId) {
+  const result = await prisma.user.findUnique({
+    where: {
+      id: parseInt(userId),
+    },
+    select: {
+      id: true,
+      name: true,
+      age: true,
+      gender: true,
+      about: true,
+      latitude: true,
+      longitude: true,
+      interests: true,
+    },
+  });
+  return result;
+}
 
 router.post("/signup", async (req, res) => {
   const { email, password } = req.body;
@@ -26,7 +46,7 @@ router.post("/signup", async (req, res) => {
         error: "There is already an account associated with this email.",
       });
     } else {
-      console.log(error.message)
+      console.log(error.message);
       res.status(400).json({ error: error.message });
     }
   }
@@ -48,7 +68,7 @@ router.post("/login", async (req, res) => {
       res.status(403).json({ error: "Incorrect password." });
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -59,21 +79,30 @@ router.get("/embarkations/:userId", async (req, res) => {
   const DISTANCE_LIMIT = 20;
   try {
     const result = await prisma.embarkation.findMany({
-        where: {
-          userId: parseInt(userId),
-        },
-      });
+      where: {
+        userId: parseInt(userId),
+      },
+    });
     const user = fetchUser(userId);
     if (!user) {
       console.error("user not found");
-      res.status(200).json(result);
+      // res.status(200).json(result);
+      res.status(404).json({ error: "User with this email not found." });
+
       return;
     } else {
-      const filtered = result.filter((res) => haversineDistance(res.latitude, res.longitude, user.latitude, user.longitude) >= DISTANCE_LIMIT);
-      res.status(200).json(filtered);
-      result.sort()
+      // const filtered = result.filter(
+      //   (res) =>
+      //     haversineDistance(
+      //       res.latitude,
+      //       res.longitude,
+      //       user.latitude,
+      //       user.longitude
+      //     ) >= DISTANCE_LIMIT
+      // );
+      res.status(200).json(result);
+      // result.sort();
     }
-    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -81,54 +110,41 @@ router.get("/embarkations/:userId", async (req, res) => {
 
 router.get("/profile/:userId", async (req, res) => {
   const { userId } = req.params;
-  async function fetchUser(userId) {
-      const result = await prisma.user.findUnique({
-        where: {
-          id: parseInt(userId),
-        },
-        select: {
-          id: true,
-          name: true,
-          age: true,
-          gender: true,
-          about: true,
-          latitude: true,
-          longitude: true,
-          interests: true,
-        },
-      });
+
+  try {
+    const result = await fetchUser(userId);
+    if (!result) {
+      res.status(404).json({ error: "User not found - invalid user ID" });
+      return null;
+    } else {
+      res.status(200).json(result);
       return result;
     }
-
-    try {
-      const result = fetchUser(userId);
-      if (!result) {
-        res.status(404).json({ error: "User not found - invalid user ID" });
-        return null;
-      } else {
-        res.status(200).json(result);
-        return result; 
-      }
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-      console.log(error);
-    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+    console.log(error);
   }
-);
+});
 
 router.post("/edit", async (req, res) => {
-  const { userId, name, age, gender, about, latitude, longitude } = req.body;
+  const { userId, name, age, gender, about, latitude, longitude, interests } =
+    req.body;
 
   try {
     const result = await prisma.user.update({
-      where: { id: userId },
+      where: { id: parseInt(userId) },
       data: {
         name,
-        age,
+        age: parseInt(age),
         gender,
         about,
         latitude,
         longitude,
+        interests: {
+          connect: interests.map((interest) => ({
+            id: interest.id,
+          })),
+        },
       },
       select: {
         id: true,
@@ -154,7 +170,13 @@ router.post("/edit", async (req, res) => {
 
 router.get("/interests", async (req, res) => {
   try {
-    const result = await prisma.interest.findMany();
+    const result = await prisma.interest.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+    });
     res.status(200).json(result);
   } catch (error) {
     res.status(401).json({ error: error.message });
