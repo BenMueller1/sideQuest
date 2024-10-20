@@ -62,15 +62,12 @@ export default function ProfileScreen() {
           about,
         } = response.data;
 
-        console.log(interests);
-
         setUserData(response.data);
         setName(name);
         setAge(age);
         setGender(gender);
         setSelectedInterests(interests);
         setAbout(about);
-        console.log(about);
         // setLatitude(latitude.toString());
         // setLongitude(longitude.toString());
         //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
@@ -158,7 +155,6 @@ export default function ProfileScreen() {
     setIsEditing(true);
   };
   const handleAddInterest = (id: number) => {
-    console.log(selectedInterests);
     if (selectedInterests.length < 6) {
       const interestToAdd = interests.find((interest) => interest.id === id);
       if (interestToAdd) {
@@ -176,7 +172,6 @@ export default function ProfileScreen() {
   };
   const handleRemoveInterest = (id: number) => {
     const interestToRemove = interests.find((interest) => interest.id === id);
-    console.log(selectedInterests.length);
     if (selectedInterests.length < 7) {
       setMessage("");
     }

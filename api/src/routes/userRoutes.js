@@ -261,6 +261,8 @@ router.post("/quiz", async (req, res) => {
       },
     });
 
+    console.log(user);
+
     res.status(200).send(user);
   } catch (error) {
     res.status(400).json({ error: error.message });

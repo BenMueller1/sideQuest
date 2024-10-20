@@ -227,7 +227,6 @@ export default function HomeScreen() {
         userId,
         eventId,
       });
-      console.log(userId);
 
       fetchEmbarkations();
     } catch (error) {

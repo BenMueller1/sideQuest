@@ -27,6 +27,8 @@ export default function SignUpScreen() {
   const [questionNum, setQuestionNum] = useState<number>(0);
   const [answers, setAnswers] = useState<AnswerDictionary>({});
 
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+
   const handleSignUp = async (): Promise<void> => {
     if (!email || !password) {
       Alert.alert("Error", "All fields are required!");
@@ -50,10 +52,9 @@ export default function SignUpScreen() {
         Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
-        // setUserId(response.data.id);
-        handleQuiz();
+        setUserId(response.data.id);
         login(response.data.id);
-        router.replace("/(tabs)");
+        handleQuiz();
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -125,7 +126,7 @@ export default function SignUpScreen() {
     if (showQuizResults) {
       const submitQuizResults = async () => {
         const response = await axios.post(`http://localhost:5001/user/quiz`, {
-          userId: 1,
+          userId: userId,
           answers,
         });
       };
