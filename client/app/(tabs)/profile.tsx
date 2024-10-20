@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Image, ActivityIndicator, TextInput, FlatList, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, View, Image, ActivityIndicator, TextInput, FlatList, TouchableOpacity, ScrollView, Text} from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Button, Theme} from "tamagui";
 import axios from 'axios';
+
+type Interest = {
+    id: number;
+    name: string;
+    description: string;
+  };
 
 export default function ProfileScreen() {
     const [userData, setUserData] = useState<any>(null);  // State to hold user info
@@ -20,8 +26,8 @@ export default function ProfileScreen() {
     const [editedAge, setEditedAge] = useState<string>('');
     const [editedGender, setEditedGender] = useState<string>('');
 
-    const [interests, setInterests] = useState<string[]>([]);  // All interests from backend
-    const [selectedInterests, setSelectedInterests] = useState<string[]>([]);  // User-selected interest
+    const [interests, setInterests] = useState<Interest[]>([]);  // All interests from backend
+    const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);  // User-selected interest
   
     useEffect(() => {
         const fetchUserData = async () => {
@@ -34,6 +40,7 @@ export default function ProfileScreen() {
                 setAge(age);
                 setGender(gender);
                 setSelectedInterests(interests);
+                console.log(interests)
                 // setLatitude(latitude.toString());
                 // setLongitude(longitude.toString());
                 //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
@@ -173,19 +180,39 @@ export default function ProfileScreen() {
         {/* Interests Section */}
         <View style={styles.section}>
             <ThemedText style={styles.header}>Interests</ThemedText>
-                <View style={styles.container}>
-                    <View style={styles.selectedInterests}>
-                        <ScrollView horizontal>
+                <View style={styles.interestContainer}>
+                <ScrollView stickyHeaderIndices={[0]} style={styles.selectedInterests}>
+                    <View style={styles.rowInterests}>
+                        {selectedInterests.map((interest) => (
+                            <TouchableOpacity
+                                key={interest.id}
+                                style={styles.interestButton}>
+                                <Text style={styles.interestText}>{interest.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    <View style={styles.rowInterests}>
+                        {interests.map((interest) => (
+                            <TouchableOpacity
+                                key={interest.id}
+                                style={styles.interestButton}>
+                                <Text style={styles.interestText}>{interest.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </ScrollView>
+                        
+ 
+                        {/* <ScrollView horizontal>
                             {selectedInterests.map((interest) => (
                                 <View key={interest} style={styles.selectedItem}>
                                     <ThemedText>{interest}</ThemedText>
-                                    {/* <TouchableOpacity onPress={() => handleRemoveInterest(interest)}>
+                                    <TouchableOpacity onPress={() => handleRemoveInterest(interest)}>
                                         <ThemedText style={styles.removeText}>x</ThemedText>
-                                    </TouchableOpacity> */}
+                                    </TouchableOpacity>
                                 </View>
                             ))}
-                        </ScrollView>
-                    </View>
+                        </ScrollView> */}
                     
                 </View>
             {/* <View style={styles.container}>
@@ -229,6 +256,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  interestContainer: {
+    flex: 1,
+    paddingTop: 5,
+  },
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -269,17 +300,37 @@ const styles = StyleSheet.create({
     padding: 5,
     marginBottom: 10,
     marginRight:5,
+    color: "#324C30",
   },
   buttonContainer: {
     flexDirection: 'column', // Stack buttons vertically
     alignItems: 'flex-start', // Align buttons to the start (you can change this to 'center' or 'flex-end' as needed)
     marginTop: 10, // Add some space above the buttons
   },
+  interestButton: {
+    backgroundColor: '#314b2f',
+    paddingHorizontal:10,
+    paddingVertical: 10,
+    marginHorizontal:5,
+    marginVertical:5,
+    borderRadius: 25,
+    width: 'auto',
+    alignItems: 'center',
+  },
+  interestText: {
+    color:'#669d62',
+    justifyContent:'center',
+    textAlign:'center',
+  },
   selectedInterests: {
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
     marginBottom: 10,
+  },
+  rowInterests: {
+    flexDirection:'row',
+    flexWrap:'wrap',
   },
   headerText: {
     fontSize: 16,
