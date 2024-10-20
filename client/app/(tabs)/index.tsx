@@ -75,7 +75,7 @@ export default function HomeScreen() {
   // pull all events from backend on load
   async function fetchEvents() {
     try {
-      const response = await axios.get(BACKEND_URL + "/events/all");
+      const response = await axios.get(`${BACKEND_URL}/user/feed/${userId}`);
       const responseData = response.data;
       const eventsFromResponse = responseData.map((event: any) => {
         const interests = responseData.interests?.map(

@@ -22,6 +22,7 @@ model User {
   age Int?
   gender String?
   about String?
+  hometown String?
   latitude Float?
   longitude Float?
   interests Interest[] @relation("UserInterests")
