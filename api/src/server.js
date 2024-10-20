@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 
 const eventRoutes = require("./routes/eventRoutes");
 const userRoutes = require("./routes/userRoutes");
+const groupRoutes = require("./routes/groupRoutes");
 require("./cron/jobs");
 require('dotenv').config();
 
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use(cors());
 app.use("/events", eventRoutes);
 app.use("/user", userRoutes);
+app.use("/groups", groupRoutes);
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

@@ -7,6 +7,8 @@ import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-ic
 import { Group } from "../../assets/types/Group";
 import { Message } from "../../assets/types/Message";
 import { EventType, InterestType } from "../../assets/types/Event";
+import { formatDistanceToNow } from 'date-fns';
+
 
 const BACKEND_URL = "http://localhost:5001";
 
@@ -15,27 +17,60 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<Group | null>(null);
   
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [userGroups, setUserGroups] = useState<Group[]>([]);
 
   const fetchCurrentUserGroups = async () => {
     try {
+      const userId = 1; // TODO replace with actual user id once we have user session storage
+
       // fetch groups
+      const groupResponseData = (await axios.get(BACKEND_URL + `/groups/user/${userId}`)).data;
 
+      console.log(`bm - groupResponseData: ${groupResponseData}`);
 
-      // for each group, parse the messages into my message types then parse the group itself
+      const groups: Group[] = await Promise.all(groupResponseData.map(async (groupData: any) => {
+        console.log(`bm - groupData: ${groupData}`);
+        console.log('bm - making event request to', BACKEND_URL + `/events/${groupData.eventId}`);
+        const event: any = (await axios.get(BACKEND_URL + `/events/${groupData.eventId}`)).data;
 
+        const group: Group = {
+          id: groupData.id,
+          event: {
+            id: event.id,
+            createdAt: event.createdAt ?? null,
+            title: event.title ?? "",
+            description: event.description ?? "",
+            latitude: event.latitude ?? 0,
+            longitude: event.longitude ?? 0,
+            capacity: event.capacity ?? 5,
+            interests: event.interests ?? [],
+          },
+          users: groupData.users?.map((user: any) => user.id) ?? [],
+          messages: groupData.messages?.map((message: any) => ({
+            id: message.id,
+            groupId: message.groupId,
+            userId: message.userId,
+            content: message.content,
+            createdAt: message.createdAt,
+            seenBy: message.seenBy?.map((user: any) => user.id) ?? [],
+          })) ?? [],
+        }
 
-      // also parse the event up here instead
-      // const event: EventType = {
-      //   id: eventResponseData.id,
-      //   createdAt: eventResponseData.createdAt ?? null,
-      //   title: eventResponseData.title ?? "",
-      //   description: eventResponseData.description ?? "",
-      //   latitude: eventResponseData.latitude ?? 0,
-      //   longitude: eventResponseData.longitude ?? 0,
-      //   capacity: eventResponseData.capacity ?? 5,
-      //   interests: eventResponseData.interests ?? [],
-      // }
+        return group;
+      }));
+
+      // order groups by most recent message
+      // if a group has no messages, it should be at the bottom
+      groups.sort((a: Group, b: Group) => {
+        const aLastMessage = a.messages.length > 0 ? a.messages[a.messages.length - 1].createdAt : new Date(0);
+        const bLastMessage = b.messages.length > 0 ? b.messages[b.messages.length - 1].createdAt : new Date(0);
+        return bLastMessage.getTime() - aLastMessage.getTime();
+      });
+
+      console.log('bm  HERE???')
+      console.log(`bm - groups: ${JSON.stringify(groups, null, 2)}`);
+
+      setUserGroups(groups);
     } catch(e) {
       console.error('Error:', e);
     }
@@ -48,32 +83,41 @@ export default function ChatPage() {
   useEffect(() => {
     const fetchData = async () => {
       await fetchCurrentUserGroups();
+      setIsLoading(false);
     }
     fetchData();
-  })
+  }, [])
 
-  const renderItem = async ({ group }: { group: Group }) => {
-    const eventResponseData = ((await axios.get(BACKEND_URL + `/events/${group.eventId}`)).data);
-    
+  const renderItem = ({ item }: { item: Group }) => {
+    const event = item.event;
+    const userId = 1; // TODO replace with actual user id once we have user session storage
+    const unseenMessagesCount = item.messages.filter((message: Message) => !message.seenBy.includes(userId)).length;
+    const formattedDateString = item.messages.length > 0
+      ? formatDistanceToNow(new Date(item.messages[item.messages.length - 1].createdAt), { addSuffix: true })
+      : '';
 
     return (
-      <TouchableOpacity style={styles.chatItem} onPress={() => handleChatPress(group.id)}>
+      <TouchableOpacity style={styles.chatItem} onPress={() => handleChatPress(item.id)}>
         <View>
           <Text style={styles.chatName}>{event.title}</Text>
           <Text style={styles.lastMessage}>
-            {group.newMessages > 0 ? `${group.newMessages} new messages` : group.lastMessage}
+            {unseenMessagesCount > 0 ? `${unseenMessagesCount} new messages` : formattedDateString}
           </Text>
         </View>
-        <Text style={styles.chatTime}>{group.time}</Text>
+        <Text style={styles.chatTime}>{formattedDateString}</Text>
       </TouchableOpacity>
-    )
-};
+    );
+  };
+
+  if (isLoading) { return; }
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={groups}
-        keyExtractor={(item) => item.id.toString()}
+        data={userGroups}
+        keyExtractor={(item: any) => {
+          return item.id.toString()
+        }}
         renderItem={renderItem}
       />
     </SafeAreaView>
