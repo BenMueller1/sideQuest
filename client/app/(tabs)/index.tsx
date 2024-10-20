@@ -59,11 +59,11 @@ export default function HomeScreen() {
       const response = await axios.get(BACKEND_URL + "/events/all");
       const responseData = response.data;
       const eventsFromResponse = responseData.map((event: any) => {
-        const interests = responseData.interests?.map((interest: any): InterestType => ({
-          id: interest?.id,
-          name: interest?.name,
-          description: interest?.description,
-        }));
+      const interests = responseData.interests?.map((interest: any): InterestType => ({
+        id: interest?.id,
+        name: interest?.name,
+        description: interest?.description,
+      }));
         return {
           id: event.id,
           createdAt: event.createdAt ?? null,
