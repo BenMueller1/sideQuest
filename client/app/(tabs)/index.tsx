@@ -93,8 +93,8 @@ export default function HomeScreen() {
           latitude: event.latitude ?? 0,
           longitude: event.longitude ?? 0,
           capacity: event.capacity ?? 5,
-          interests: event.interests ?? [],
-        };
+          interests: interests ?? [],
+        }
       });
       setEvents(eventsFromResponse);
     } catch (error) {
@@ -280,14 +280,12 @@ export default function HomeScreen() {
 
       <TamaGuiButton
         style={styles.floatingButton}
-        backgroundColor="black"
+        backgroundColor="white"
         circular
         size={40}
         onPress={() => setIsOpen(true)}
       >
-        <TamaGuiText color="white" style={styles.buttonText}>
-          +
-        </TamaGuiText>
+        <Image source={require('../../assets/images/plus.png')}></Image>
       </TamaGuiButton>
 
       <Modal
@@ -350,7 +348,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   floatingButton: {
     position: "absolute",
-    bottom: 20,
+    bottom: 10,
     left: "50%",
     transform: [{ translateX: -30 }],
     justifyContent: "center",

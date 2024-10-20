@@ -32,6 +32,39 @@ async function fetchUser(userId){
   return result;
 }
 
+// get a user by id
+router.get("/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await prisma.user.findUnique({
+      where: {
+        id: parseInt(userId),
+      },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        about: true,
+        latitude: true,
+        longitude: true,
+        interests: true,
+      },
+    });
+    if (!result) {
+      res.status(404).json({ error: "User not found - invalid user ID" });
+      return null;
+    } else {
+      res.status(200).json(result);
+      return result;
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+    console.log(error);
+  }
+})
+
 router.post("/signup", async (req, res) => {
   const { email, password } = req.body;
   const hashed_password = await hashPassword(password);
