@@ -19,6 +19,7 @@ async function fetchUser(userId) {
       age: true,
       gender: true,
       about: true,
+      hometown: true,
       latitude: true,
       longitude: true,
       interests: true,
@@ -126,8 +127,17 @@ router.get("/profile/:userId", async (req, res) => {
 });
 
 router.post("/edit", async (req, res) => {
-  const { userId, name, age, gender, about, latitude, longitude, interests } =
-    req.body;
+  const {
+    userId,
+    name,
+    age,
+    gender,
+    about,
+    hometown,
+    latitude,
+    longitude,
+    interests,
+  } = req.body;
 
   console.log(interests.length);
 
@@ -139,6 +149,7 @@ router.post("/edit", async (req, res) => {
         age: parseInt(age),
         gender,
         about,
+        hometown,
         latitude,
         longitude,
         interests: {
@@ -153,6 +164,7 @@ router.post("/edit", async (req, res) => {
         age: true,
         gender: true,
         about: true,
+        hometown: true,
         latitude: true,
         longitude: true,
         interests: true,
