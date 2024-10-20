@@ -48,17 +48,15 @@ export default function IndividualChatView({
     setMessages(messages);
   }
 
+  // load in all usernames after messages populates
   useEffect(() => {
-    const loadData = async () => {
-      await loadMessages();
-      setIsLoading(false);
-
+    const loadUsernames = async () => {
       console.log("bm - message userids", messages.map(msg => msg.userId));
 
       // Fetch usernames
       const userIds = Array.from(new Set(messages.map(msg => msg.userId)));
       const usernamePromises = userIds.map(async usrId => {
-        if (usrId === 1) {
+        if (usrId === parseInt(userId ?? "-1")) {
           return { userId: usrId, name: 'You' };
         } else {
           const response = await axios.get(BACKEND_URL + `/user/${usrId}`);
@@ -82,6 +80,17 @@ export default function IndividualChatView({
 
       setUsernames(usernameMap);
     }
+    loadUsernames();
+  }, [messages])
+
+  useEffect(() => {
+    const loadData = async () => {
+      await loadMessages();
+      
+
+      
+      setIsLoading(false);
+    }
     loadData();
 
     // set up socket on initial load
@@ -99,7 +108,7 @@ export default function IndividualChatView({
       socket.off('receive_message');
       socket.disconnect();
     };
-  }, [])
+  }, [currentGroupChat]) // TODO usernames only disaply after we delete "currentGroupChat" from this array 
 
   const sendMessage = async () => {
     if (messageText.trim() === '') return;  // Don't send empty messages
@@ -156,7 +165,7 @@ export default function IndividualChatView({
   // };
 
   const renderItem = ({ item }: { item: Message }) => {
-    const userName = usernames[item.userId] ?? 'Loading...';
+    const userName = usernames[item.userId] ?? '';
     const createdAt = new Date(item.createdAt); // Ensure createdAt is a Date object
 
     return (
