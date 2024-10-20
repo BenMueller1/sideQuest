@@ -6,6 +6,7 @@ import axios from "axios";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import QuizQuestion from "@/components/QuizQuestion";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AnswerDictionary {
   [key: number]: number;
@@ -16,8 +17,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState<string>("");
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
-
-  const [userId, setUserId] = useState<number | undefined>(undefined);
+  const {login} = useAuth();
 
   const [showQuizInstructions, setShowQuizInstructions] =
     useState<boolean>(false);
@@ -52,6 +52,9 @@ export default function SignUpScreen() {
         setPassword("");
         setUserId(response.data.id);
         handleQuiz();
+        login(response.data.id);
+        router.replace("/(tabs)");
+
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -77,8 +80,10 @@ export default function SignUpScreen() {
 
         setLoginEmail("");
         setLoginPassword("");
-        setUserId(response.data.id);
+        login(response.data.id);
         router.replace("/(tabs)");
+        
+        // handleQuiz();
       } else {
         setLoginEmail("");
         setLoginPassword("");
@@ -86,6 +91,7 @@ export default function SignUpScreen() {
     } catch (error) {
       // Handle any errors from the server or network
       Alert.alert("Error", "An error occurred during sign-up.");
+      console.log(error);
     }
   };
 
