@@ -1,6 +1,8 @@
 const express = require("express");
 const prisma = require("./../models/index");
 const { embed, k_nearest } = require("./../util/eventEmbeddings");
+const matchingService = require("./../util/matchingService");
+const haversineDistance = require("./../util/haversineDist");
 
 const router = express.Router();
 
@@ -30,7 +32,6 @@ router.get("/:eventId", async (req, res) => {
 router.post("/create", async (req, res) => {
   const { title, description, latitude, longitude, capacity } = req.body;
   try {
-    console.log("attempt to create new event");
     const event = await prisma.event.create({
       data: {
         title,
@@ -113,6 +114,12 @@ router.get("/embarkations/:eventId", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
+
+router.post("/match", async (req, res) => {
+  await matchingService();
+
+  res.sendStatus(200);
 });
 
 module.exports = router;

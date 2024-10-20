@@ -9,85 +9,97 @@ import {
   TouchableOpacity,
   ScrollView,
   Text,
+  SafeAreaView,
 } from "react-native";
+import Modal from 'react-modal';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { Button, Theme } from "tamagui";
+import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+
+Modal.setAppElement('#root');
+import AutoCompleteInput from "@/components/AutoCompleteInput";
 
 type Interest = {
   id: number;
   name: string;
   description: string;
 };
-
+type Location = {
+  lat: number; // Latitude
+  lng: number; // Longitude
+};
 export default function ProfileScreen() {
   const { userId } = useAuth();
-  const [userData, setUserData] = useState<any>(null); // State to hold user info
   const [loading, setLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to track edit mode
   const [name, setName] = useState<string>("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [location, setLocation] = useState<string>(""); // User-friendly location
-  const [latitude, setLatitude] = useState<string>(""); // Latitude
-  const [longitude, setLongitude] = useState<string>("");
+  const [hometown, setHometown] = useState<string>(""); // User-friendly location
+  const [homeLocation, setHomeLocation] = useState<Location>();
   const [about, setAbout] = useState<string>("");
 
-  const [editedName, setEditedName] = useState<string>("");
-  const [editedAge, setEditedAge] = useState<string>("");
-  const [editedGender, setEditedGender] = useState<string>("");
-  const [editedSelectedInterests, setEditedSelectedInterests] = useState<
-    Interest[]
-  >([]);
-  const [editedAbout, setEditedAbout] = useState<string>("");
+  // const [editedName, setEditedName] = useState<string>("");
+  // const [editedAge, setEditedAge] = useState<string>("");
+  // const [editedGender, setEditedGender] = useState<string>("");
+  // const [editedSelectedInterests, setEditedSelectedInterests] = useState<
+  //   Interest[]
+  // >([]);
+  // const [editedAbout, setEditedAbout] = useState<string>("");
 
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
 
   const [errorMessage, setMessage] = useState<string>("");
+  
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  const openModal = () => setModalIsOpen(true);
+  const closeModal = () => setModalIsOpen(false);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/user/profile/${userId}`
+      ); //CHANGE THIS TO USER ID PROP
+      const {
+        name,
+        age,
+        gender,
+        hometown,
+        interests = [],
+        about,
+      } = response.data;
+
+      setName(name);
+      setAge(age);
+      setGender(gender);
+      setSelectedInterests(interests);
+      setAbout(about);
+      setHometown(hometown);
+
+      if(name == null) {
+        openModal();
+        console.log("ghelp")
+      }
+      
+    } catch (error) {
+      console.error("Error fetching data", error);
+    }
+    try {
+      const response = await axios.get(
+        "http://localhost:5001/user/interests"
+      );
+      setInterests(response.data);
+    } catch (error) {
+      console.error("Error fetching interests", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5001/user/profile/${userId}`
-        ); //CHANGE THIS TO USER ID PROP
-        const {
-          name,
-          age,
-          gender,
-          latitude,
-          longitude,
-          interests = [],
-          about,
-        } = response.data;
-
-        setUserData(response.data);
-        setName(name);
-        setAge(age);
-        setGender(gender);
-        setSelectedInterests(interests);
-        setAbout(about);
-        // setLatitude(latitude.toString());
-        // setLongitude(longitude.toString());
-        //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
-        //setLocation(locationFromCoords);
-      } catch (error) {
-        console.error("Error fetching data", error);
-      }
-      try {
-        const response = await axios.get(
-          "http://localhost:5001/user/interests"
-        );
-        setInterests(response.data);
-      } catch (error) {
-        console.error("Error fetching interests", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUserData();
   }, []);
 
@@ -101,63 +113,39 @@ export default function ProfileScreen() {
   let xorInterests = interests.filter(
     (o1: { id: number }) => !selectedInterests.some((o2) => o1.id === o2.id)
   );
-  // if (!userData) {
-  // return (
-  //     <ThemedView style={styles.loadingContainer}>
-  //     <ThemedText>Error loading user data</ThemedText>
-  //     </ThemedView>
-  // );
-  // }
+
   const handleSave = async () => {
     console.log(selectedInterests.length);
 
     try {
       await axios.post("http://localhost:5001/user/edit", {
         userId: userId,
-        name: editedName,
-        age: editedAge,
-        gender: editedGender,
-        about: editedAbout,
-        latitude: 0,
-        longitude: 0,
+        name: name,
+        age: age,
+        gender: gender,
+        about: about,
+        hometown: hometown,
+        latitude: homeLocation?.lat,
+        longitude: homeLocation?.lng,
         interests: selectedInterests,
       });
-      setName(editedName);
-      setAge(editedAge);
-      setGender(editedGender);
-      setAbout(editedAbout);
-      setUserData({
-        ...userData,
-        name,
-        age,
-        gender,
-        latitude,
-        longitude,
-        about,
-      }); // Update local state with new values
+
+     fetchUserData();
       setIsEditing(false); // Exit edit mode
     } catch (error) {
       console.error("Error updating user data:", error);
     }
   };
+  //callback for cancel button press
   const handleCancel = () => {
-    // Revert to original values if cancel is pressed
-    setEditedName(name);
-    setEditedAge(age);
-    setEditedGender(gender);
-    setEditedAbout(about);
-    setSelectedInterests(editedSelectedInterests);
+    fetchUserData();
     setIsEditing(false);
   };
+  //callback for edit button press
   const handleEdit = () => {
-    // Set edited fields to current values when editing starts
-    setEditedName(name);
-    setEditedAge(age);
-    setEditedGender(gender);
-    setEditedAbout(about);
-    setEditedSelectedInterests(selectedInterests);
     setIsEditing(true);
   };
+
   const handleAddInterest = (id: number) => {
     if (selectedInterests.length < 6) {
       const interestToAdd = interests.find((interest) => interest.id === id);
@@ -174,6 +162,7 @@ export default function ProfileScreen() {
       setMessage("You cannot add more than 6 activities.");
     }
   };
+
   const handleRemoveInterest = (id: number) => {
     const interestToRemove = interests.find((interest) => interest.id === id);
     if (selectedInterests.length < 7) {
@@ -189,12 +178,13 @@ export default function ProfileScreen() {
   };
 
   return (
-    <Theme name="dark_alt2">
+    <SafeAreaView>
+      <Theme name="dark_alt2">
       <ScrollView>
         <View style={styles.container}>
           <View style={styles.profileRow}>
             <Image
-              source={{ uri: "../../assets/images/icons8-male-user-90.png" }} // Replace with actual avatar image source
+              source={require('../../assets/images/user.png')} // Replace with actual avatar image source
               style={styles.avatar}
             />
             <View style={styles.userInfo}>
@@ -202,59 +192,76 @@ export default function ProfileScreen() {
                 <>
                   <TextInput
                     style={styles.input}
-                    value={editedName}
-                    onChangeText={setEditedName}
+                    value={name}
+                    onChangeText={setName}
                     placeholder="Name"
                     placeholderTextColor="#888"
                   />
                   <TextInput
                     style={styles.input}
-                    value={editedAge}
-                    onChangeText={setEditedAge}
+                    value={age}
+                    onChangeText={setAge}
                     placeholder="Age"
                     placeholderTextColor="#888"
                     keyboardType="numeric"
                   />
                   <TextInput
                     style={styles.input}
-                    value={editedGender}
-                    onChangeText={setEditedGender}
+                    value={gender}
+                    onChangeText={setGender}
                     placeholder="Gender"
                     placeholderTextColor="#888"
                   />
-                  {/* <TextInput
-                    style={styles.input}
-                    value={location}
-                    onChangeText={setLocation}
-                    placeholder="Location"
-                /> */}
+                 <AutoCompleteInput updateEventLocation={setHomeLocation} updateEventPlace={setHometown}></AutoCompleteInput>
                 </>
               ) : (
                 <>
                   <ThemedText style={styles.userText}>Name: {name}</ThemedText>
                   <ThemedText style={styles.userText}>Age: {age}</ThemedText>
-                  <ThemedText style={styles.userText}>
-                    Gender: {gender}
-                  </ThemedText>
-                  {/* <ThemedText style={styles.userText}>Location: {location}</ThemedText> */}
+                  <ThemedText style={styles.userText}>Gender: {gender}</ThemedText>
+                  <ThemedText style={styles.userText}>Hometown: {hometown} </ThemedText>
                 </>
               )}
             </View>
+            </View>
             {/* Edit/Save Button */}
             {isEditing ? (
-              <View style={styles.buttonContainer}>
+              <XStack style={styles.buttonContainer}>
+                <View style={{width:180}}></View>
                 <Button style={styles.saveAndCancel} onPress={handleSave}>
                   Save
                 </Button>
                 <Button style={styles.saveAndCancel} onPress={handleCancel}>
                   Cancel
                 </Button>
-              </View>
+              </XStack>
             ) : (
               <Button onPress={handleEdit}>Edit</Button>
             )}
           </View>
+            <ThemedText>
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={closeModal}
+                contentLabel="Modal"
+                style={{
+                content: {
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    transform: 'translate(-50%, -50%)',
+                    flexDirection:"column",
+                    justifyContent:'center',
+                    alignItems:'center',
 
+                },
+                }}
+            >
+                <h2>Fill out your personal info!</h2>
+                <Button onPress={closeModal}>Ok!</Button>
+            </Modal>
+            </ThemedText>
           {/* About Section */}
           <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>
@@ -262,8 +269,8 @@ export default function ProfileScreen() {
               <>
                 <TextInput
                   style={styles.input}
-                  value={editedAbout}
-                  onChangeText={setEditedAbout}
+                  value={about}
+                  onChangeText={setAbout}
                   placeholder="About me"
                   placeholderTextColor="#888"
                 ></TextInput>
@@ -284,7 +291,7 @@ export default function ProfileScreen() {
                   <TouchableOpacity
                     key={interest.id}
                     style={styles.interestButton}
-                    onPress={() => handleRemoveInterest(interest.id)}
+                    onPress={() => {if(isEditing) handleRemoveInterest(interest.id)}}
                   >
                     <Text style={styles.interestText}>{interest.name}</Text>
                   </TouchableOpacity>
@@ -322,6 +329,8 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </Theme>
+    </SafeAreaView>
+    
   );
 }
 
@@ -343,7 +352,7 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 5,
   },
   avatar: {
     width: 80,
@@ -373,6 +382,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
+    marginTop: 10,
   },
   input: {
     borderBottomWidth: 1,

@@ -8,6 +8,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import QuizQuestion from "@/components/QuizQuestion";
 import { useAuth } from "@/hooks/useAuth";
 
+
+
 interface AnswerDictionary {
   [key: number]: number;
 }
@@ -19,8 +21,7 @@ export default function SignUpScreen() {
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
   const { login } = useAuth();
 
-  const [showQuizInstructions, setShowQuizInstructions] =
-    useState<boolean>(false);
+  const [showQuizInstructions, setShowQuizInstructions] = useState<boolean>(false);
   const [showQuiz, setShowQuiz] = useState<boolean>(false);
   const [showQuizResults, setShowQuizResults] = useState<boolean>(false);
   const [questions, setQuestions] = useState<any[]>([]);
@@ -29,12 +30,15 @@ export default function SignUpScreen() {
 
   const [userId, setUserId] = useState<number | undefined>(undefined);
 
+  const [signUpMessage, setSignUpMessage] = useState<string>("");
+  const [loginMessage, setLoginMessage] = useState<string>("");
+
   const handleSignUp = async (): Promise<void> => {
     if (!email || !password) {
-      Alert.alert("Error", "All fields are required!");
+      setSignUpMessage("Email and password are required!");
       return;
     } else if (!validateEmail(email)) {
-      Alert.alert("Error", "Please enter a valid email!");
+      setSignUpMessage("Please enter a valid email.");
       return;
     }
 
@@ -46,10 +50,10 @@ export default function SignUpScreen() {
       });
 
       // Handle the response from the backend
+      console.log(response.status);
       if (response.status === 409) {
-        Alert.alert("Error", "This email already exists.");
+        setSignUpMessage("This email already exists.");
       } else if (response.status === 200) {
-        Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
         setUserId(response.data.id);
@@ -58,13 +62,18 @@ export default function SignUpScreen() {
       }
     } catch (error) {
       // Handle any errors from the server or network
-      Alert.alert("Error", "An error occurred during sign-up.");
+      if (error.response.status === 409) {
+        setSignUpMessage("This email already exists.");
+      }
+      else {
+        setSignUpMessage("An error occurred during sign-up.")
+      }
     }
   };
 
   const handleLogin = async (): Promise<void> => {
     if (!loginEmail || !loginPassword) {
-      Alert.alert("Error", "Email and password are required!");
+      setLoginMessage("Email and password are required!");
       return;
     }
     try {
@@ -76,7 +85,6 @@ export default function SignUpScreen() {
 
       // Handle the response from the backend
       if (response.status === 200) {
-        Alert.alert("Success", response.data.message);
 
         setLoginEmail("");
         setLoginPassword("");
@@ -90,8 +98,15 @@ export default function SignUpScreen() {
       }
     } catch (error) {
       // Handle any errors from the server or network
-      Alert.alert("Error", "An error occurred during sign-up.");
-      console.log(error);
+      if(error.response.status === 404) {
+        setLoginMessage("User with this email not found.");
+      }
+      else if (error.response.status === 403) {
+        setLoginMessage("Incorrect password")
+      }
+      else {
+        setLoginMessage("An error occurred during sign-up.");
+      }
     }
   };
 
@@ -162,6 +177,9 @@ export default function SignUpScreen() {
           secureTextEntry={true}
           onChangeText={setPassword}
         />
+        {signUpMessage ? (
+                      <Text style={{ color: "red", paddingBottom: 5 }}>{signUpMessage}</Text>
+                    ) : null}
         <Button onPress={handleSignUp} style={styles.button}>
           Sign Up
         </Button>
@@ -186,6 +204,9 @@ export default function SignUpScreen() {
           secureTextEntry={true}
           onChangeText={setLoginPassword}
         />
+        {loginMessage ? (
+                      <Text style={{ color: "red", paddingBottom: 5 }}>{loginMessage}</Text>
+                    ) : null}
         <Button onPress={handleLogin} style={styles.button}>
           Log In
         </Button>
@@ -195,7 +216,9 @@ export default function SignUpScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <Text style={styles.modalText}>
             To complete your registration, please do our personality quiz to
-            help us match you with people to SideQuest with! Answer each of the
+            help us match you with people to SideQuest with! </Text>
+            <Text style={styles.modalText}>
+            Answer each of the
             following questions on a scale of 1-5, 1 being "strongly disagree"
             and 5 being "strongly agree".
           </Text>
@@ -288,5 +311,6 @@ const styles = StyleSheet.create({
     marginRight: 25,
     marginLeft: 25,
     color: "#324C30",
+    textAlign:"center",
   },
 });
