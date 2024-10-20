@@ -11,16 +11,15 @@ import {
   Text,
   SafeAreaView,
 } from "react-native";
-import Modal from 'react-modal';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+import { router } from "expo-router";
 
 
 
-Modal.setAppElement('#root');
 import AutoCompleteInput from "@/components/AutoCompleteInput";
 
 type Interest = {
@@ -33,7 +32,7 @@ type Location = {
   lng: number; // Longitude
 };
 export default function ProfileScreen() {
-  const { userId } = useAuth();
+  const { userId, logout } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to track edit mode
   const [name, setName] = useState<string>("");
@@ -46,11 +45,11 @@ export default function ProfileScreen() {
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
 
   const [errorMessage, setMessage] = useState<string>("");
-  
-  const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  const openModal = () => setModalIsOpen(true);
-  const closeModal = () => setModalIsOpen(false);
+  const Logout = () => {
+    logout();
+    router.replace("..");
+  }
 
   const fetchUserData = async () => {
     try {
@@ -73,11 +72,6 @@ export default function ProfileScreen() {
       setAbout(about);
       setHometown(hometown);
 
-      if(name == null) {
-        openModal();
-        console.log("ghelp")
-      }
-      
     } catch (error) {
       console.error("Error fetching data", error);
     }
@@ -171,9 +165,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex:1}}>
       <Theme name="dark_alt2">
-      <ScrollView>
+      <ScrollView style={{flex:1}}>
         <View style={styles.container}>
           <View style={styles.profileRow}>
             <Image
@@ -233,27 +227,7 @@ export default function ProfileScreen() {
             )}
           </View>
             <ThemedText>
-            <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Modal"
-                style={{
-                content: {
-                    top: '50%',
-                    left: '50%',
-                    right: 'auto',
-                    bottom: 'auto',
-                    transform: 'translate(-50%, -50%)',
-                    flexDirection:"column",
-                    justifyContent:'center',
-                    alignItems:'center',
-
-                },
-                }}
-            >
-                <h2>Fill out your personal info!</h2>
-                <Button onPress={closeModal}>Ok!</Button>
-            </Modal>
+            
             </ThemedText>
           {/* About Section */}
           <View style={styles.section}>
@@ -321,6 +295,17 @@ export default function ProfileScreen() {
           </View>
 
       </ScrollView>
+
+
+      <Button
+        style={styles.floatingButton}
+        circular
+        size={40} 
+        onPress={Logout}
+      >
+        <Image width ={30} height = {30} source={require('../../assets/images/exit.png')}></Image>
+      </Button>
+
     </Theme>
     </SafeAreaView>
     
@@ -328,6 +313,16 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  floatingButton: {
+    position: "absolute",
+    bottom: 10,
+    left: "50%",
+    transform: [{ translateX: -30 }],
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#DED190",
+
+  },
   container: {
     flex: 1,
     padding: 20,

@@ -65,6 +65,7 @@ export default function HomeScreen() {
   const [currentUserEmbarkations, setCurrentUserEmbarkations] = useState<
     EmbarkationType[]
   >([]);
+  const [cap, setCap] = useState("");
 
   //states for new event
   const [eventName, setEventName] = useState("");
@@ -256,7 +257,7 @@ export default function HomeScreen() {
         description: eventDetails,
         latitude: eventLocation?.lat,
         longitude: eventLocation?.lng,
-        capacity: 5,
+        capacity: cap,
       };
       const response = await axios.post(BACKEND_URL + `/events/create/`, body);
       const responseData = response.data;
@@ -328,6 +329,19 @@ export default function HomeScreen() {
                   updateEventLocation={setEventLocation}
                   updateEventPlace={setEventPlace}
                 />
+                <H4 size={25} themeInverse>
+                  {" "}
+                  with{" "}
+                </H4>
+                <Input
+                  style={styles.modalInput}
+                  placeholder="2"
+                  value={cap}
+                  onChangeText={setCap}
+                />
+                <H4 size={25} themeInverse>
+                 {"   "}other people
+                </H4>
               </XStack>
 
               <TextArea

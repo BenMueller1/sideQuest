@@ -62,6 +62,7 @@ export default function SignUpScreen() {
       }
     } catch (error) {
       // Handle any errors from the server or network
+      //@ts-ignore
       if (error.response.status === 409) {
         setSignUpMessage("This email already exists.");
       }
@@ -98,9 +99,11 @@ export default function SignUpScreen() {
       }
     } catch (error) {
       // Handle any errors from the server or network
+      //@ts-ignore 
       if(error.response.status === 404) {
         setLoginMessage("User with this email not found.");
       }
+      //@ts-ignore
       else if (error.response.status === 403) {
         setLoginMessage("Incorrect password")
       }
