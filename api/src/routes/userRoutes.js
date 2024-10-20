@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("./../models/index");
 const { hashPassword, verifyPassword } = require("./../util/userFunctions");
+const { embed } = require("../util/eventEmbeddings");
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.post("/signup", async (req, res) => {
         hashed_password,
       },
     });
-
+    console.log(email);
     res.status(200).json(result);
   } catch (error) {
     if (error.code === "P2002") {
@@ -24,6 +25,7 @@ router.post("/signup", async (req, res) => {
         error: "There is already an account associated with this email.",
       });
     } else {
+      console.log(error.message)
       res.status(400).json({ error: error.message });
     }
   }
@@ -39,9 +41,7 @@ router.post("/login", async (req, res) => {
 
     if (!result) {
       res.status(404).json({ error: "User with this email not found." });
-    }
-
-    if (verifyPassword(password, result.hashed_password)) {
+    } else if (verifyPassword(password, result.hashed_password)) {
       res.sendStatus(200);
     } else {
       res.status(403).json({ error: "Incorrect password." });
@@ -154,7 +154,7 @@ router.post("/interests", async (req, res) => {
 
   try {
     const result = await prisma.user.update({
-      where: { id: userId },
+      where: { id: parseInt(userId) },
       data: {
         interests: {
           connect: interests.map((id) => ({ id })),
@@ -179,6 +179,57 @@ router.post("/interests", async (req, res) => {
     } else {
       res.status(400).json({ error: error.message });
     }
+  }
+});
+
+router.get("/quiz", async (req, res) => {
+  try {
+    const result = await prisma.question.findMany({
+      orderBy: {
+        questionNumber: "asc",
+      },
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post("/quiz", async (req, res) => {
+  const { userId, answers } = req.body;
+  const sentimentMap = {
+    1: "Strongly disagrees with",
+    2: "Somewhat disagrees with",
+    3: "Is neutral towards",
+    4: "Somewhat agrees with",
+    5: "Strongly agrees with",
+  };
+
+  try {
+    const result = await prisma.question.findMany({ orderBy: { id: "asc" } });
+
+    let inputString = "";
+
+    for (let [key, value] of Object.entries(answers)) {
+      const question = result.find((obj) => obj.id == key);
+
+      inputString += `${sentimentMap[value]} the statement "${question.question}" `;
+    }
+
+    const embedding = await embed(256, inputString);
+    console.log(embedding);
+
+    const user = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: {
+        personaEmbedding: embedding,
+      },
+    });
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

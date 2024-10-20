@@ -16,6 +16,7 @@ router.get("/all", async (req, res) => {
 router.post("/create", async (req, res) => {
   const { title, description, latitude, longitude, capacity } = req.body;
   try {
+    console.log("attempt to create new event")
     const event = await prisma.event.create({
       data: {
         title,
@@ -25,7 +26,7 @@ router.post("/create", async (req, res) => {
         capacity,
       },
     });
-
+    console.log("prisma event:" + event);
     const interests = await prisma.interest.findMany();
 
     event.embedding = await embed(256, `${event.name}: ${event.description}`);
