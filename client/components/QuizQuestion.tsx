@@ -22,7 +22,7 @@ export default function QuizQuestion({
           handleQuestionChoice(question.id, 1);
         }}
       >
-        <Text>1</Text>
+        <Text>1 &#40;Strongly disagree&#41;</Text>
       </Button>
       <Button
         style={styles.option}
@@ -54,7 +54,7 @@ export default function QuizQuestion({
           handleQuestionChoice(question.id, 5);
         }}
       >
-        <Text>5</Text>
+        <Text>5 &#40;Strongly agree&#41;</Text>
       </Button>
     </View>
   );

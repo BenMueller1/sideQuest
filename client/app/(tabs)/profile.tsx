@@ -10,11 +10,14 @@ import {
   ScrollView,
   Text,
 } from "react-native";
+import Modal from 'react-modal';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+
+Modal.setAppElement('#root');
 
 type Interest = {
   id: number;
@@ -38,15 +41,18 @@ export default function ProfileScreen() {
   const [editedName, setEditedName] = useState<string>("");
   const [editedAge, setEditedAge] = useState<string>("");
   const [editedGender, setEditedGender] = useState<string>("");
-  const [editedSelectedInterests, setEditedSelectedInterests] = useState<
-    Interest[]
-  >([]);
+  const [editedSelectedInterests, setEditedSelectedInterests] = useState<Interest[]>([]);
   const [editedAbout, setEditedAbout] = useState<string>("");
 
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
 
   const [errorMessage, setMessage] = useState<string>("");
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  const openModal = () => setModalIsOpen(true);
+  const closeModal = () => setModalIsOpen(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -70,6 +76,11 @@ export default function ProfileScreen() {
         setGender(gender);
         setSelectedInterests(interests);
         setAbout(about);
+
+        if(name == null) {
+            openModal();
+            console.log("ghelp")
+        }
         // setLatitude(latitude.toString());
         // setLongitude(longitude.toString());
         //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
@@ -101,13 +112,6 @@ export default function ProfileScreen() {
   let xorInterests = interests.filter(
     (o1: { id: number }) => !selectedInterests.some((o2) => o1.id === o2.id)
   );
-  // if (!userData) {
-  // return (
-  //     <ThemedView style={styles.loadingContainer}>
-  //     <ThemedText>Error loading user data</ThemedText>
-  //     </ThemedView>
-  // );
-  // }
   const handleSave = async () => {
     console.log(selectedInterests.length);
 
@@ -254,7 +258,29 @@ export default function ProfileScreen() {
               <Button onPress={handleEdit}>Edit</Button>
             )}
           </View>
+            <ThemedText>
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={closeModal}
+                contentLabel="Modal"
+                style={{
+                content: {
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    transform: 'translate(-50%, -50%)',
+                    flexDirection:"column",
+                    justifyContent:'center',
+                    alignItems:'center',
 
+                },
+                }}
+            >
+                <h2>Fill out your personal info!</h2>
+                <Button onPress={closeModal}>Ok!</Button>
+            </Modal>
+            </ThemedText>
           {/* About Section */}
           <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>

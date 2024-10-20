@@ -62,7 +62,7 @@ router.post("/login", async (req, res) => {
 
     if (!result) {
       res.status(404).json({ error: "User with this email not found." });
-    } else if (verifyPassword(password, result.hashed_password)) {
+    } else if (await verifyPassword(password, result.hashed_password)) {
       res.status(200).json(result);
     } else {
       res.status(403).json({ error: "Incorrect password." });
@@ -185,39 +185,6 @@ router.get("/interests", async (req, res) => {
   }
 });
 
-router.post("/interests", async (req, res) => {
-  const { userId, interests } = req.body;
-
-  try {
-    const result = await prisma.user.update({
-      where: { id: parseInt(userId) },
-      data: {
-        interests: {
-          connect: interests.map((id) => ({ id })),
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        gender: true,
-        about: true,
-        latitude: true,
-        longitude: true,
-        interests: true,
-      },
-    });
-
-    res.status(201).json(result);
-  } catch (error) {
-    if (error.code === "P2025") {
-      res.status(404).json({ error: "User not found" });
-    } else {
-      res.status(400).json({ error: error.message });
-    }
-  }
-});
-
 router.get("/quiz", async (req, res) => {
   try {
     const result = await prisma.question.findMany({
@@ -225,9 +192,11 @@ router.get("/quiz", async (req, res) => {
         questionNumber: "asc",
       },
     });
+    
 
     res.status(200).json(result);
   } catch (error) {
+    
     res.status(400).json({ error: error.message });
   }
 });
