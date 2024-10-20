@@ -150,7 +150,7 @@ export default function ChatPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F5F5',
   },
   chatList: {
     padding: 10,
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
   chatName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: `#324C30`
   },
   lastMessage: {
     fontSize: 14,
