@@ -1,20 +1,45 @@
-import { ExpoRoot } from 'expo-router';
-import React from 'react';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { PlaceSuggestion } from "@/assets/types/PlaceSuggestions";
 
-const PlacesAutocomplete = () => {
-  return (
-    <GooglePlacesAutocomplete
-      placeholder='Search'
-      onPress={(data, details = null) => {
-        console.log(data, details);
-      }}
-      query={{
-        key: process.env.GOOGLE_MAPS_API,
-        language: 'en',
-      }}
-    />
-  );
-};
+interface AutocompleteProps {
+  input: string,
+  suggestions_callback: (suggestions: PlaceSuggestion[]) => void,
+  user_location?: {
+    lat: number,
+    lng: number
+  }
+  
+}
+export async function PlacesAutoComplete(props : AutocompleteProps) {
+  // @ts-ignore
+  const { Place, AutocompleteSessionToken, AutocompleteSuggestion } = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+  const {user_location, suggestions_callback,input} = props
+  // Add an initial request body.
+  const request = {
+      input: input,
+      locationBias: user_location ? {radius: 100, center: user_location} : null,
+      includedPrimaryTypes: ["city"],
+      language: "en-US",
+      region: "us",
+  };
 
-export default PlacesAutocomplete;
+  const token = new AutocompleteSessionToken();
+  // Add the token to the request.
+  // @ts-ignore
+  request.sessionToken = token;
+  // Fetch autocomplete suggestions.
+  const { suggestions }: { suggestions: PlaceSuggestion[] } = 
+  await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+  suggestions_callback(suggestions);
+
+ 
+
+  // let place = suggestions[0].placePrediction.toPlace(); 
+  // await place.fetchFields({
+  //     fields: ['displayName', 'formattedAddress'],
+  // });
+
+  // const placeInfo = document.getElementById("prediction") as HTMLElement;
+  // placeInfo.textContent = 'First predicted place: ' + place.displayName + ': ' + place.formattedAddress;
+
+}
+
