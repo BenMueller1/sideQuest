@@ -21,10 +21,13 @@ export default function ProfileScreen() {
     const [location, setLocation] = useState<string>(''); // User-friendly location
     const [latitude, setLatitude] = useState<string>(''); // Latitude
     const [longitude, setLongitude] = useState<string>('');
+    const [about, setAbout] = useState<string>('');
 
     const [editedName, setEditedName] = useState<string>('');
     const [editedAge, setEditedAge] = useState<string>('');
     const [editedGender, setEditedGender] = useState<string>('');
+    const [editedSelectedInterests, setEditedSelectedInterests] = useState<Interest[]>([]);
+    const [editedAbout, setEditedAbout] = useState<string>('');
 
     const [interests, setInterests] = useState<Interest[]>([]);  // All interests from backend
     const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);  // User-selected interest
@@ -32,15 +35,16 @@ export default function ProfileScreen() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('http://localhost:5001/user/profile/1')
-                const { name, age, gender, latitude, longitude, interests } = response.data;
+                const response = await axios.get('http://localhost:5001/user/profile/1') //CHANGE THIS TO USER ID PROP
+                const { name, age, gender, latitude, longitude, interests, about } = response.data;
 
                 setUserData(response.data);
                 setName(name);
                 setAge(age);
                 setGender(gender);
                 setSelectedInterests(interests);
-                console.log(interests)
+                setAbout(about);
+                console.log(about)
                 // setLatitude(latitude.toString());
                 // setLongitude(longitude.toString());
                 //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
@@ -67,6 +71,7 @@ export default function ProfileScreen() {
           </ThemedView>
         );
       }
+    let xorInterests = (interests).filter((o1: { id: number; }) => !selectedInterests.some(o2 => o1.id === o2.id))
     // if (!userData) {
     // return (
     //     <ThemedView style={styles.loadingContainer}>
@@ -81,13 +86,16 @@ export default function ProfileScreen() {
             name: editedName,
             age: editedAge,
             gender: editedGender,
+            about: editedAbout,
             latitude:0,
-            longitude:0
+            longitude:0,
+            interests:selectedInterests
           });
           setName(editedName);
           setAge(editedAge);
           setGender(editedGender);
-          setUserData({ ...userData, name, age, gender, latitude, longitude }); // Update local state with new values
+          setAbout(editedAbout);
+          setUserData({ ...userData, name, age, gender, latitude, longitude, about }); // Update local state with new values
           setIsEditing(false); // Exit edit mode
         } catch (error) {
           console.error('Error updating user data:', error);
@@ -98,6 +106,8 @@ export default function ProfileScreen() {
         setEditedName(name);
         setEditedAge(age);
         setEditedGender(gender);
+        setEditedAbout(about);
+        setSelectedInterests(editedSelectedInterests);
         setIsEditing(false);
       };
       const handleEdit = () => {
@@ -105,142 +115,153 @@ export default function ProfileScreen() {
         setEditedName(name);
         setEditedAge(age);
         setEditedGender(gender);
+        setEditedAbout(about);
+        setEditedSelectedInterests(selectedInterests);
         setIsEditing(true);
       };
+      const handleAddInterest = (id: number) => {
+        if(selectedInterests.length < 6) {
+            const interestToAdd = interests.find(interest => interest.id === id);
+            if (interestToAdd) {
+                if (!selectedInterests.some(interest => interest.id === id)) {
+                    setSelectedInterests(prevSelected => [...prevSelected, interestToAdd]);
+                }
+            }
+        }
+      }
+      const handleRemoveInterest = (id: number) => {
+        const interestToRemove = interests.find(interest => interest.id === id);
+            if (interestToRemove) {
+                if (selectedInterests.some(interest => interest.id === id)) {
+                    setSelectedInterests(prevSelected => 
+                        prevSelected.filter(interest => interest.id !== id)
+                    );
+                }
+            }
+      }
 
   return (
     <Theme name="dark_alt2">
+        <ScrollView>
         <View style={styles.container}>
-        {/* Profile Section */}
-        <View style={styles.profileRow}>
-            {/* Avatar */}
-            <Image
-            source={{ uri: '../../assets/images/icons8-male-user-90.png' }} // Replace with actual avatar image source
-            style={styles.avatar}
-            />
-            {/* User Info */}
-            <View style={styles.userInfo}>
-          {isEditing ? (
-            <>
-              <TextInput
-                style={styles.input}
-                value={editedName}
-                onChangeText={setEditedName}
-                placeholder="Name"
-                placeholderTextColor="#888"
-              />
-              <TextInput
-                style={styles.input}
-                value={editedAge}
-                onChangeText={setEditedAge}
-                placeholder="Age"
-                placeholderTextColor="#888"
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={styles.input}
-                value={editedGender}
-                onChangeText={setEditedGender}
-                placeholder="Gender"
-                placeholderTextColor="#888"
-              />
-              {/* <TextInput
-                style={styles.input}
-                value={location}
-                onChangeText={setLocation}
-                placeholder="Location"
-              /> */}
-            </>
-          ) : (
-            <>
-              <ThemedText style={styles.userText}>Name: {name}</ThemedText>
-              <ThemedText style={styles.userText}>Age: {age}</ThemedText>
-              <ThemedText style={styles.userText}>Gender: {gender}</ThemedText>
-              {/* <ThemedText style={styles.userText}>Location: {location}</ThemedText> */}
-            </>
-          )}
-        </View>
-        {/* Edit/Save Button */}
-        {isEditing ? (
-            <View style={styles.buttonContainer}>
-                <Button onPress={handleSave}>Save</Button>
-                <Button onPress={handleCancel}>Cancel</Button>
-            </View>
+            <View style={styles.profileRow}>
+                <Image
+                source={{ uri: '../../assets/images/icons8-male-user-90.png' }} // Replace with actual avatar image source
+                style={styles.avatar}
+                />
+                <View style={styles.userInfo}>
+            {isEditing ? (
+                <>
+                <TextInput
+                    style={styles.input}
+                    value={editedName}
+                    onChangeText={setEditedName}
+                    placeholder="Name"
+                    placeholderTextColor="#888"
+                />
+                <TextInput
+                    style={styles.input}
+                    value={editedAge}
+                    onChangeText={setEditedAge}
+                    placeholder="Age"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    style={styles.input}
+                    value={editedGender}
+                    onChangeText={setEditedGender}
+                    placeholder="Gender"
+                    placeholderTextColor="#888"
+                />
+                {/* <TextInput
+                    style={styles.input}
+                    value={location}
+                    onChangeText={setLocation}
+                    placeholder="Location"
+                /> */}
+                </>
             ) : (
-                <Button onPress={handleEdit}>Edit</Button>
+                <>
+                <ThemedText style={styles.userText}>Name: {name}</ThemedText>
+                <ThemedText style={styles.userText}>Age: {age}</ThemedText>
+                <ThemedText style={styles.userText}>Gender: {gender}</ThemedText>
+                {/* <ThemedText style={styles.userText}>Location: {location}</ThemedText> */}
+                </>
             )}
-        </View>
+            </View>
+            {/* Edit/Save Button */}
+            {isEditing ? (
+                <View style={styles.buttonContainer}>
+                    <Button style={styles.saveAndCancel} onPress={handleSave}>Save</Button>
+                    <Button style={styles.saveAndCancel} onPress={handleCancel}>Cancel</Button>
+                </View>
+                ) : (
+                    <Button onPress={handleEdit}>Edit</Button>
+                )}
+            </View>
 
-        {/* About Section */}
-        <View style={styles.section}>
+            {/* About Section */}
+            <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>
-            
-        </View>
+                {isEditing ? (
+                <>
+                    <TextInput
+                        style={styles.input}
+                        value={editedAbout}
+                        onChangeText={setEditedAbout}
+                        placeholder="About me"
+                        placeholderTextColor="#888">         
+                    </TextInput>
+                </>
+            ) : (
+                <>
+                    <ThemedText style={styles.userText}>{about}</ThemedText>
+                </>
+            )}
+                
+            </View>
 
-        {/* Interests Section */}
-        <View style={styles.section}>
-            <ThemedText style={styles.header}>Interests</ThemedText>
+            {/* Interests Section */}
+            <View style={styles.section}>
+                <ThemedText style={styles.header}>Interests</ThemedText>
                 <View style={styles.interestContainer}>
-                <ScrollView stickyHeaderIndices={[0]} style={styles.selectedInterests}>
                     <View style={styles.rowInterests}>
                         {selectedInterests.map((interest) => (
                             <TouchableOpacity
                                 key={interest.id}
-                                style={styles.interestButton}>
+                                style={styles.interestButton}
+                                onPress={() => handleRemoveInterest(interest.id)}>
                                 <Text style={styles.interestText}>{interest.name}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <View style={styles.rowInterests}>
-                        {interests.map((interest) => (
-                            <TouchableOpacity
-                                key={interest.id}
-                                style={styles.interestButton}>
-                                <Text style={styles.interestText}>{interest.name}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </ScrollView>
-                        
- 
-                        {/* <ScrollView horizontal>
-                            {selectedInterests.map((interest) => (
-                                <View key={interest} style={styles.selectedItem}>
-                                    <ThemedText>{interest}</ThemedText>
-                                    <TouchableOpacity onPress={() => handleRemoveInterest(interest)}>
-                                        <ThemedText style={styles.removeText}>x</ThemedText>
-                                    </TouchableOpacity>
-                                </View>
+                    {isEditing && (
+                        <>
+                            <View style={styles.separatorContainer}>
+                                <View style={styles.separator} /></View>
+                            <View style={styles.rowInterests}>
+                            {xorInterests.map((interest) => (
+                                <TouchableOpacity
+                                    key={interest.id}
+                                    style={styles.interestButton}
+                                    onPress={() => handleAddInterest(interest.id)}>
+                                    <Text style={styles.interestText}>{interest.name}</Text>
+                                </TouchableOpacity>
                             ))}
-                        </ScrollView> */}
-                    
+                            </View>
+                        </>
+                    )}    
                 </View>
-            {/* <View style={styles.container}>
-                <View style={styles.selectedHeader}>
-                </View>
-                <FlatList
-                data={interests}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                    style={styles.interestItem}
-                    onPress={() => handleSelectInterest(item)}
-                    disabled={selectedInterests.includes(item)}  // Disable if already selected
-                    >
-                    <ThemedText>{item}</ThemedText>
-                    </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.interestList}
-                />
-            </View> */}
-        </View>
+            </View>
 
-        {/* Recent Section */}
-        <View style={styles.section}>
-            <ThemedText style={styles.header}>Recent</ThemedText>
-            {/* You can add recent activities content here */}
+            {/* Recent Section */}
+            <View style={styles.section}>
+                <ThemedText style={styles.header}>Recent</ThemedText>
+                {/* You can add recent activities content here */}
+            </View>
         </View>
-        </View>
+        </ScrollView>
     </Theme>
   );
 }
@@ -304,8 +325,11 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'column', // Stack buttons vertically
-    alignItems: 'flex-start', // Align buttons to the start (you can change this to 'center' or 'flex-end' as needed)
+    alignItems: 'center', // Align buttons to the start (you can change this to 'center' or 'flex-end' as needed)
     marginTop: 10, // Add some space above the buttons
+  },
+  saveAndCancel: {
+    marginVertical:5,
   },
   interestButton: {
     backgroundColor: '#314b2f',
@@ -359,5 +383,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#DDDDDD',
+  },
+  separatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#CCCCCC",
+    flex: 1,
   },
 });

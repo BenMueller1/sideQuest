@@ -99,11 +99,11 @@ router.get("/profile/:userId", async (req, res) => {
 });
 
 router.post("/edit", async (req, res) => {
-  const { userId, name, age, gender, about, latitude, longitude } = req.body;
+  const { userId, name, age, gender, about, latitude, longitude, interests } = req.body;
 
   try {
     const result = await prisma.user.update({
-      where: { id: userId },
+      where: { id: parseInt(userId) },
       data: {
         name,
         age: parseInt(age),
@@ -111,6 +111,11 @@ router.post("/edit", async (req, res) => {
         about,
         latitude,
         longitude,
+        interests: {
+          connect: interests.map(interest => ({
+            id: interest.id
+          })),
+        },
       },
       select: {
         id: true,
