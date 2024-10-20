@@ -1,4 +1,3 @@
-const cron = require("node-cron");
 const prisma = require("./../models/index");
 
 const bucketByEvent = (embarkations) => {
@@ -30,8 +29,4 @@ async function matchingService() {
   }
 }
 
-cron.schedule("0 12 * * *", () => {
-  console.log("Matching embarkations into groups");
-});
-
-module.exports = cron;
+module.exports = matchingService;

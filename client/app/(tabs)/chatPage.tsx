@@ -9,6 +9,7 @@ import { Message } from "../../assets/types/Message";
 import { EventType, InterestType } from "../../assets/types/Event";
 import { formatDistanceToNow, set } from 'date-fns';
 import IndividualChatView from "../components/IndividualChatView";
+import { useAuth } from "@/hooks/useAuth";
 
 const BACKEND_URL = "http://localhost:5001";
 
@@ -16,13 +17,12 @@ export default function ChatPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<Group | null>(null);
+  const userId = (useAuth()).userId;
   
   const [userGroups, setUserGroups] = useState<Group[]>([]);
 
   const fetchCurrentUserGroups = async () => {
     try {
-      const userId = 1; // TODO replace with actual user id once we have user session storage
-
       // fetch groups
       const groupResponseData = (await axios.get(BACKEND_URL + `/groups/user/${userId}`)).data;
 
@@ -91,7 +91,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchCurrentUserGroups();
+      await fetchCurrentUserGroups() ;
       setIsLoading(false);
     }
     fetchData();
@@ -99,8 +99,7 @@ export default function ChatPage() {
 
   const renderItem = ({ item }: { item: Group }) => {
     const event = item.event;
-    const userId = 1; // TODO replace with actual user id once we have user session storage
-    const unseenMessagesCount = item.messages.filter((message: Message) => !message.seenBy.includes(userId)).length;
+    const unseenMessagesCount = item.messages.filter((message: Message) => !message.seenBy.includes(parseInt(userId ?? '0'))).length;
     const formattedDateString = item.messages.length > 0
       ? formatDistanceToNow(new Date(item.messages[item.messages.length - 1].createdAt), { addSuffix: true })
       : '';

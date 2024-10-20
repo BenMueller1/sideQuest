@@ -25,6 +25,7 @@ model User {
   latitude Float?
   longitude Float?
   interests Interest[] @relation("UserInterests")
+  personaEmbedding Float[]
   embarkations Embarkation[]
   groups Group[] @relation("UserGroups")
   messages Message[]
@@ -85,8 +86,4 @@ model Question {
  id Int @id @default(autoincrement())
  questionNumber Int
  question String
- option1 String
- option2 String
- option3 String
- option4 String
 }
