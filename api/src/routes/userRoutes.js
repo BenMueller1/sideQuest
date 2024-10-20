@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("./../models/index");
 const { hashPassword, verifyPassword } = require("./../util/userFunctions");
+const { embed } = require("../util/eventEmbeddings");
 
 const router = express.Router();
 
@@ -171,6 +172,57 @@ router.post("/interests", async (req, res) => {
     } else {
       res.status(400).json({ error: error.message });
     }
+  }
+});
+
+router.get("/quiz", async (req, res) => {
+  try {
+    const result = await prisma.question.findMany({
+      orderBy: {
+        questionNumber: "asc",
+      },
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post("/quiz", async (req, res) => {
+  const { userId, answers } = req.body;
+  const sentimentMap = {
+    1: "Strongly disagrees with",
+    2: "Somewhat disagrees with",
+    3: "Is neutral towards",
+    4: "Somewhat agrees with",
+    5: "Strongly agrees with",
+  };
+
+  try {
+    const result = await prisma.question.findMany({ orderBy: { id: "asc" } });
+
+    let inputString = "";
+
+    for (let [key, value] of Object.entries(answers)) {
+      const question = result.find((obj) => obj.id == key);
+
+      inputString += `${sentimentMap[value]} the statement "${question.question}" `;
+    }
+
+    const embedding = await embed(256, inputString);
+    console.log(embedding);
+
+    const user = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: {
+        personaEmbedding: embedding,
+      },
+    });
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

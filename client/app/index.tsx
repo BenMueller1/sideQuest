@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TextInput, Alert, View, Modal } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme, H3, SizableText, Card, Text } from "tamagui";
 import axios from "axios";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import QuizQuestion from "@/components/QuizQuestion";
 
-// import 'dotenv/config';
+interface AnswerDictionary {
+  [key: number]: number;
+}
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState<string>("");
@@ -14,8 +17,15 @@ export default function SignUpScreen() {
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
 
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+
+  const [showQuizInstructions, setShowQuizInstructions] =
+    useState<boolean>(false);
   const [showQuiz, setShowQuiz] = useState<boolean>(false);
-  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
+  const [showQuizResults, setShowQuizResults] = useState<boolean>(false);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [questionNum, setQuestionNum] = useState<number>(0);
+  const [answers, setAnswers] = useState<AnswerDictionary>({});
 
   const handleSignUp = async (): Promise<void> => {
     if (!email || !password) {
@@ -40,6 +50,7 @@ export default function SignUpScreen() {
         Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
+        setUserId(response.data.id);
         handleQuiz();
       }
     } catch (error) {
@@ -47,6 +58,7 @@ export default function SignUpScreen() {
       Alert.alert("Error", "An error occurred during sign-up.");
     }
   };
+
   const handleLogin = async (): Promise<void> => {
     if (!loginEmail || !loginPassword) {
       Alert.alert("Error", "Email and password are required!");
@@ -62,12 +74,11 @@ export default function SignUpScreen() {
       // Handle the response from the backend
       if (response.status === 200) {
         Alert.alert("Success", response.data.message);
-        console.log("ok");
 
         setLoginEmail("");
         setLoginPassword("");
+        setUserId(response.data.id);
         router.replace("/(tabs)");
-        // handleQuiz();
       } else {
         setLoginEmail("");
         setLoginPassword("");
@@ -79,8 +90,43 @@ export default function SignUpScreen() {
   };
 
   const handleQuiz = async (): Promise<void> => {
-    setShowQuiz(true);
+    const response = await axios.get(`http://localhost:5001/user/quiz`);
+
+    setQuestions(response.data);
+
+    setQuestionNum(0);
+
+    setShowQuizInstructions(true);
   };
+
+  const handleQuestionChoice = async (
+    questionId: number,
+    option: number
+  ): Promise<void> => {
+    setAnswers((prevState) => ({
+      ...prevState,
+      [questionId]: option,
+    }));
+
+    if (questionNum >= questions.length - 1) {
+      setShowQuiz(false);
+      setShowQuizResults(true);
+    } else {
+      setQuestionNum(questionNum + 1);
+    }
+  };
+
+  useEffect(() => {
+    if (showQuizResults) {
+      const submitQuizResults = async () => {
+        const response = await axios.post(`http://localhost:5001/user/quiz`, {
+          userId: 1,
+          answers,
+        });
+      };
+      submitQuizResults();
+    }
+  }, [showQuizResults]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -139,14 +185,47 @@ export default function SignUpScreen() {
         </Button>
       </View>
 
+      <Modal transparent={true} visible={showQuizInstructions}>
+        <SafeAreaView style={styles.modalContainer}>
+          <Text style={styles.modalText}>
+            To complete your registration, please do our personality quiz to
+            help us match you with people to SideQuest with! Answer each of the
+            following questions on a scale of 1-5, 1 being "strongly disagree"
+            and 5 being "strongly agree".
+          </Text>
+          <Button
+            onPress={() => {
+              setShowQuizInstructions(false);
+              setShowQuiz(true);
+            }}
+          >
+            Start Here!
+          </Button>
+        </SafeAreaView>
+      </Modal>
+
       <Modal transparent={true} visible={showQuiz}>
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Hello World!</Text>
-            <Button onPress={() => setShowQuiz(false)}>
-              <Text>Close</Text>
-            </Button>
-          </View>
+          <QuizQuestion
+            question={questions[questionNum]}
+            handleQuestionChoice={handleQuestionChoice}
+          ></QuizQuestion>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal transparent={true} visible={showQuizResults}>
+        <SafeAreaView style={styles.modalContainer}>
+          <Text style={styles.modalText}>
+            Thanks for doing the quiz! This will help us match you with
+            like-minded individuals for side quests.
+          </Text>
+          <Button
+            onPress={async () => {
+              router.replace("/(tabs)");
+            }}
+          >
+            Go to Home
+          </Button>
         </SafeAreaView>
       </Modal>
     </Theme>
@@ -196,12 +275,11 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center content horizontally
     backgroundColor: "white", // Set a background color for visibility
   },
-  modalContent: {
-    padding: 20,
-    alignItems: "center",
-  },
   modalText: {
     fontSize: 24,
     marginBottom: 20, // Space between text and button
+    marginRight: 25,
+    marginLeft: 25,
+    color: "#324C30",
   },
 });
