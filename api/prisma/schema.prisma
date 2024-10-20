@@ -21,6 +21,7 @@ model User {
   name String?
   age Int?
   gender String?
+  about String?
   latitude Float?
   longitude Float?
   interests Interest[] @relation("UserInterests")
@@ -45,6 +46,7 @@ model Interest {
   id Int @id @default(autoincrement())
   name String
   description String
+  embedding Float[]
   users User[] @relation("UserInterests")
   events Event[] @relation("EventInterests")
 }
