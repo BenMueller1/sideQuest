@@ -130,6 +130,8 @@ router.post("/edit", async (req, res) => {
   const { userId, name, age, gender, about, latitude, longitude, interests } =
     req.body;
 
+  console.log(interests.length);
+
   try {
     const result = await prisma.user.update({
       where: { id: parseInt(userId) },
@@ -141,7 +143,7 @@ router.post("/edit", async (req, res) => {
         latitude,
         longitude,
         interests: {
-          connect: interests.map((interest) => ({
+          set: interests.map((interest) => ({
             id: interest.id,
           })),
         },

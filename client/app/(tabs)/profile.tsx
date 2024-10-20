@@ -38,7 +38,9 @@ export default function ProfileScreen() {
   const [editedName, setEditedName] = useState<string>("");
   const [editedAge, setEditedAge] = useState<string>("");
   const [editedGender, setEditedGender] = useState<string>("");
-  const [editedSelectedInterests, setEditedSelectedInterests] = useState<Interest[]>([]);
+  const [editedSelectedInterests, setEditedSelectedInterests] = useState<
+    Interest[]
+  >([]);
   const [editedAbout, setEditedAbout] = useState<string>("");
 
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
@@ -107,6 +109,8 @@ export default function ProfileScreen() {
   // );
   // }
   const handleSave = async () => {
+    console.log(selectedInterests.length);
+
     try {
       await axios.post("http://localhost:5001/user/edit", {
         userId: userId,
