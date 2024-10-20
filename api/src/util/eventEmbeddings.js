@@ -49,49 +49,27 @@ const k_nearest = (k, interests, event) => {
   });
 };
 
-async function main() {
+async function embed_interests() {
   const interests = await prisma.interest.findMany();
 
-  //   const interests_embedding = [];
-
-  //   console.log("Started embedding interests!");
+  console.log("Started embedding interests!");
 
   for (let interest of interests) {
     const embedding = await embed(
       256,
       `${interest.name}: ${interest.description}`
     );
-    // interests_embedding.push({
-    //   id: interest.id,
-    //   name: interest.name,
-    //   description: interest.description,
-    //   embedding,
-    // });
 
     const result = await prisma.interest.update({
       where: {
         id: interest.id,
       },
       data: {
-        embedding,
+        embedding: embedding,
       },
     });
   }
   console.log("Finished embedding interests!");
-
-  //   const events = await prisma.event.findMany();
-
-  //   const event = events[0];
-  //   console.log(event);
-
-  //   for (let event of events) {
-  //     const embedding = await embed(256, `${event.name}: ${event.description}`);
-  //     event.embedding = embedding;
-
-  //     console.log({ ...event, embedding: undefined });
-
-  //     console.log(k_nearest(5, interests_embedding, event));
-  //   }
 }
 
-main();
+module.exports = { embed, k_nearest };
