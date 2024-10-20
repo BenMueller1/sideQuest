@@ -161,5 +161,6 @@ const styles = StyleSheet.create({
   },
   separatorText: {
     marginHorizontal: 10,
+    color: "#324C30",
   },
 });

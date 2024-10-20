@@ -57,7 +57,7 @@ router.get("/profile/:userId", async (req, res) => {
   try {
     const result = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: parseInt(userId),
       },
       select: {
         id: true,
@@ -72,6 +72,7 @@ router.get("/profile/:userId", async (req, res) => {
     });
 
     if (!result) {
+      console.log("hi");
       res.status(404).json({ error: "User not found - invalid user ID" });
     } else {
       res.status(200).json(result);
@@ -89,7 +90,7 @@ router.post("/edit", async (req, res) => {
       where: { id: userId },
       data: {
         name,
-        age,
+        age: parseInt(age),
         gender,
         about,
         latitude,
@@ -119,7 +120,13 @@ router.post("/edit", async (req, res) => {
 
 router.get("/interests", async (req, res) => {
   try {
-    const result = await prisma.interest.findMany();
+    const result = await prisma.interest.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true
+      }
+    });
     res.status(200).json(result);
   } catch (error) {
     res.status(401).json({ error: error.message });

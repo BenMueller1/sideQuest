@@ -3,11 +3,12 @@ const cors = require("cors");
 
 const eventRoutes = require("./routes/eventRoutes");
 const userRoutes = require("./routes/userRoutes");
+require('dotenv').config();
 require("./cron/jobs");
 
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
 app.use(cors());

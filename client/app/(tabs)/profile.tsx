@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Image, ActivityIndicator, TextInput} from 'react-native';
+import { StyleSheet, View, Image, ActivityIndicator, TextInput, FlatList, TouchableOpacity, ScrollView} from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Button, Theme} from "tamagui";
@@ -16,25 +16,37 @@ export default function ProfileScreen() {
     const [latitude, setLatitude] = useState<string>(''); // Latitude
     const [longitude, setLongitude] = useState<string>('');
 
+    const [editedName, setEditedName] = useState<string>('');
+    const [editedAge, setEditedAge] = useState<string>('');
+    const [editedGender, setEditedGender] = useState<string>('');
 
+    const [interests, setInterests] = useState<string[]>([]);  // All interests from backend
+    const [selectedInterests, setSelectedInterests] = useState<string[]>([]);  // User-selected interest
+  
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/profile/1')
-                const { name, age, gender, latitude, longitude } = response.data;
+                const response = await axios.get('http://localhost:5001/user/profile/1')
+                const { name, age, gender, latitude, longitude, interests } = response.data;
 
                 setUserData(response.data);
-                setName("John");
+                setName(name);
                 setAge(age);
                 setGender(gender);
-                setLatitude(latitude.toString());
-                setLongitude(longitude.toString());
-                
+                setSelectedInterests(interests);
+                // setLatitude(latitude.toString());
+                // setLongitude(longitude.toString());
                 //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
                 //setLocation(locationFromCoords);
             } catch (error) {
                 console.error("Error fetching data", error);
-            } finally {
+            } 
+            try {
+                const response = await axios.get('http://localhost:5001/user/interests');
+                setInterests(response.data);
+              } catch (error) {
+                console.error('Error fetching interests', error);
+              } finally {
                 setLoading(false);
             }
         };
@@ -57,23 +69,40 @@ export default function ProfileScreen() {
     // }
     const handleSave = async () => {
         try {
-          await axios.post('http://localhost:5000/edit', {
+          await axios.post('http://localhost:5001/user/edit', {
             userId:1,
-            name,
-            age,
-            gender,
+            name: editedName,
+            age: editedAge,
+            gender: editedGender,
             latitude:0,
             longitude:0
           });
+          setName(editedName);
+          setAge(editedAge);
+          setGender(editedGender);
           setUserData({ ...userData, name, age, gender, latitude, longitude }); // Update local state with new values
           setIsEditing(false); // Exit edit mode
         } catch (error) {
           console.error('Error updating user data:', error);
         }
       };
+      const handleCancel = () => {
+        // Revert to original values if cancel is pressed
+        setEditedName(name);
+        setEditedAge(age);
+        setEditedGender(gender);
+        setIsEditing(false);
+      };
+      const handleEdit = () => {
+        // Set edited fields to current values when editing starts
+        setEditedName(name);
+        setEditedAge(age);
+        setEditedGender(gender);
+        setIsEditing(true);
+      };
 
   return (
-    <Theme>
+    <Theme name="dark_alt2">
         <View style={styles.container}>
         {/* Profile Section */}
         <View style={styles.profileRow}>
@@ -88,53 +117,95 @@ export default function ProfileScreen() {
             <>
               <TextInput
                 style={styles.input}
-                value={name}
-                onChangeText={setName}
+                value={editedName}
+                onChangeText={setEditedName}
                 placeholder="Name"
+                placeholderTextColor="#888"
               />
               <TextInput
                 style={styles.input}
-                value={age}
-                onChangeText={setAge}
+                value={editedAge}
+                onChangeText={setEditedAge}
                 placeholder="Age"
+                placeholderTextColor="#888"
                 keyboardType="numeric"
               />
               <TextInput
                 style={styles.input}
-                value={gender}
-                onChangeText={setGender}
+                value={editedGender}
+                onChangeText={setEditedGender}
                 placeholder="Gender"
+                placeholderTextColor="#888"
               />
-              <TextInput
+              {/* <TextInput
                 style={styles.input}
                 value={location}
                 onChangeText={setLocation}
                 placeholder="Location"
-              />
+              /> */}
             </>
           ) : (
             <>
               <ThemedText style={styles.userText}>Name: {name}</ThemedText>
               <ThemedText style={styles.userText}>Age: {age}</ThemedText>
               <ThemedText style={styles.userText}>Gender: {gender}</ThemedText>
-              <ThemedText style={styles.userText}>Location: {location}</ThemedText>
+              {/* <ThemedText style={styles.userText}>Location: {location}</ThemedText> */}
             </>
           )}
         </View>
         {/* Edit/Save Button */}
         {isEditing ? (
-        <>
-            <Button onPress={handleSave}>Save</Button>
-        </>   
-        ) : (
-          <Button onPress={() => setIsEditing(true)}>Edit</Button>
-        )}
+            <View style={styles.buttonContainer}>
+                <Button onPress={handleSave}>Save</Button>
+                <Button onPress={handleCancel}>Cancel</Button>
+            </View>
+            ) : (
+                <Button onPress={handleEdit}>Edit</Button>
+            )}
+        </View>
+
+        {/* About Section */}
+        <View style={styles.section}>
+            <ThemedText style={styles.header}>About</ThemedText>
+            
         </View>
 
         {/* Interests Section */}
         <View style={styles.section}>
             <ThemedText style={styles.header}>Interests</ThemedText>
-            {/* You can add interests content here */}
+                <View style={styles.container}>
+                    <View style={styles.selectedInterests}>
+                        <ScrollView horizontal>
+                            {selectedInterests.map((interest) => (
+                                <View key={interest} style={styles.selectedItem}>
+                                    <ThemedText>{interest}</ThemedText>
+                                    {/* <TouchableOpacity onPress={() => handleRemoveInterest(interest)}>
+                                        <ThemedText style={styles.removeText}>x</ThemedText>
+                                    </TouchableOpacity> */}
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </View>
+                    
+                </View>
+            {/* <View style={styles.container}>
+                <View style={styles.selectedHeader}>
+                </View>
+                <FlatList
+                data={interests}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                    style={styles.interestItem}
+                    onPress={() => handleSelectInterest(item)}
+                    disabled={selectedInterests.includes(item)}  // Disable if already selected
+                    >
+                    <ThemedText>{item}</ThemedText>
+                    </TouchableOpacity>
+                )}
+                contentContainerStyle={styles.interestList}
+                />
+            </View> */}
         </View>
 
         {/* Recent Section */}
@@ -181,11 +252,13 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 16,
     marginBottom: 5,
+    color: "#324C30",
   },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: "#324C30",
   },
   section: {
     marginBottom: 20,
@@ -195,5 +268,45 @@ const styles = StyleSheet.create({
     borderBottomColor: '#CCCCCC',
     padding: 5,
     marginBottom: 10,
+    marginRight:5,
+  },
+  buttonContainer: {
+    flexDirection: 'column', // Stack buttons vertically
+    alignItems: 'flex-start', // Align buttons to the start (you can change this to 'center' or 'flex-end' as needed)
+    marginTop: 10, // Add some space above the buttons
+  },
+  selectedInterests: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
+    marginBottom: 10,
+  },
+  headerText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  selectedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E0E0E0',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 10,
+  },
+  removeText: {
+    marginLeft: 5,
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  interestList: {
+    paddingVertical: 20,
+  },
+  interestItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DDDDDD',
   },
 });
