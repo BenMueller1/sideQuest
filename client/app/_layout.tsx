@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { TamaguiProvider } from "tamagui";
 import * as themes from "../theme-output";
 import config from "../tamagui.config";
+import { useAuth, AuthProvider} from "@/hooks/useAuth";
 
 import "react-native-reanimated";
 
@@ -37,12 +38,15 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={config}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </TamaguiProvider>
+    <AuthProvider>
+      <TamaguiProvider config={config}>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </TamaguiProvider>
+    </AuthProvider>
+    
   );
 }

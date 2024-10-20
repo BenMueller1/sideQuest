@@ -5,6 +5,7 @@ import { Button, Theme, H3, SizableText, Card, Text } from "tamagui";
 import axios from "axios";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/hooks/useAuth";
 
 // import 'dotenv/config';
 
@@ -13,7 +14,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState<string>("");
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
-
+  const {login} = useAuth();
   const [showQuiz, setShowQuiz] = useState<boolean>(false);
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
 
@@ -41,6 +42,9 @@ export default function SignUpScreen() {
         setEmail("");
         setPassword("");
         handleQuiz();
+        login(response.data.id);
+        router.replace("/(tabs)");
+
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -62,11 +66,12 @@ export default function SignUpScreen() {
       // Handle the response from the backend
       if (response.status === 200) {
         Alert.alert("Success", response.data.message);
-        console.log("ok");
 
         setLoginEmail("");
         setLoginPassword("");
+        login(response.data.id);
         router.replace("/(tabs)");
+        
         // handleQuiz();
       } else {
         setLoginEmail("");
@@ -75,6 +80,7 @@ export default function SignUpScreen() {
     } catch (error) {
       // Handle any errors from the server or network
       Alert.alert("Error", "An error occurred during sign-up.");
+      console.log(error);
     }
   };
 

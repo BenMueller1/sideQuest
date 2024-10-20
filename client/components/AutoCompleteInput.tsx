@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#324C30',
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: 'gray',
+
   },
   textInput: {
     height: 40, // Match height with other inputs
@@ -57,9 +57,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   listView: {
-    backgroundColor: 'white', // Make sure dropdown background matches
+    backgroundColor: '#DED190', // Make sure dropdown background matches
     maxHeight: 200, // Optional: limit height of suggestions
   },
+  row: {
+    backgroundColor: '#DED190'
+  }
 });
 
 export default AutoCompleteInput;

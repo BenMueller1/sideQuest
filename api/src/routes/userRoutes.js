@@ -1,4 +1,7 @@
+const e = require("express");
 const express = require("express");
+const { default: haversineDistance } = require("../util/haversineDist");
+const distanceFunction = require("../util/haversineDist");
 const prisma = require("./../models/index");
 const { hashPassword, verifyPassword } = require("./../util/userFunctions");
 
@@ -6,7 +9,6 @@ const router = express.Router();
 
 router.post("/signup", async (req, res) => {
   const { email, password } = req.body;
-
   const hashed_password = await hashPassword(password);
 
   try {
@@ -16,7 +18,6 @@ router.post("/signup", async (req, res) => {
         hashed_password,
       },
     });
-    console.log(email);
     res.status(200).json(result);
   } catch (error) {
     if (error.code === "P2002") {
@@ -41,26 +42,37 @@ router.post("/login", async (req, res) => {
     if (!result) {
       res.status(404).json({ error: "User with this email not found." });
     } else if (verifyPassword(password, result.hashed_password)) {
-      res.sendStatus(200);
+      res.status(200).json(result);
     } else {
       res.status(403).json({ error: "Incorrect password." });
     }
   } catch (error) {
+    console.log(error)
     res.status(400).json({ error: error.message });
   }
 });
 
 router.get("/embarkations/:userId", async (req, res) => {
   const { userId } = req.params;
-
+  //TODO: change
+  const DISTANCE_LIMIT = 20;
   try {
     const result = await prisma.embarkation.findMany({
-      where: {
-        userId: parseInt(userId),
-      },
-    });
-
-    res.status(200).json(result);
+        where: {
+          userId: parseInt(userId),
+        },
+      });
+    const user = fetchUser(userId);
+    if (!user) {
+      console.error("user not found");
+      res.status(200).json(result);
+      return;
+    } else {
+      const filtered = result.filter((res) => haversineDistance(res.latitude, res.longitude, user.latitude, user.longitude) >= DISTANCE_LIMIT);
+      res.status(200).json(filtered);
+      result.sort()
+    }
+    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -68,33 +80,40 @@ router.get("/embarkations/:userId", async (req, res) => {
 
 router.get("/profile/:userId", async (req, res) => {
   const { userId } = req.params;
-
-  try {
-    const result = await prisma.user.findUnique({
-      where: {
-        id: parseInt(userId),
-      },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        gender: true,
-        about: true,
-        latitude: true,
-        longitude: true,
-        interests: true,
-      },
-    });
-
-    if (!result) {
-      res.status(404).json({ error: "User not found - invalid user ID" });
-    } else {
-      res.status(200).json(result);
+  async function fetchUser(userId) {
+      const result = await prisma.user.findUnique({
+        where: {
+          id: parseInt(userId),
+        },
+        select: {
+          id: true,
+          name: true,
+          age: true,
+          gender: true,
+          about: true,
+          latitude: true,
+          longitude: true,
+          interests: true,
+        },
+      });
+      return result;
     }
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+
+    try {
+      const result = fetchUser(userId);
+      if (!result) {
+        res.status(404).json({ error: "User not found - invalid user ID" });
+        return null;
+      } else {
+        res.status(200).json(result);
+        return result; 
+      }
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+      console.log(error);
+    }
   }
-});
+);
 
 router.post("/edit", async (req, res) => {
   const { userId, name, age, gender, about, latitude, longitude } = req.body;

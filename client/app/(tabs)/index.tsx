@@ -10,9 +10,10 @@ import {
   YStack,
   TextArea,
   ScrollView,
+  Image,
 } from "tamagui"; // or '@tamagui/core'
 import type { CardProps } from 'tamagui'
-import { Button as TamaGuiButton, Text as TamaGuiText } from 'tamagui'
+import { Button as TamaGuiButton, Text as TamaGuiText, View as TamaGuiView } from 'tamagui'
 import { SafeAreaView } from "react-native-safe-area-context";
 // import { PlacesAutoComplete } from "@/components/PlacesAutoComplete";
 import { useState, useEffect } from "react";
@@ -21,6 +22,7 @@ import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-ic
 
 import { PlaceSuggestion } from "@/assets/types/PlaceSuggestions";
 import AutoCompleteInput from "@/components/AutoCompleteInput";
+import {useAuth} from '../../hooks/useAuth'
 
 const BACKEND_URL = "http://localhost:5001";
 type Location = {
@@ -38,6 +40,7 @@ type Location = {
 // };
 
 export default function HomeScreen() {
+  const {userId} = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<EventType[]>([]);
@@ -82,7 +85,6 @@ export default function HomeScreen() {
 
   async function fetchEmbarkations() {
     try {
-      const userId = 1; // TODO: get user ID from auth context
       const response = await axios.get(BACKEND_URL + `/user/embarkations/${userId}`);
       const responseData = response.data;
       const embarkationsFromResponse = responseData.map((embarkation: any) => {
@@ -184,7 +186,6 @@ export default function HomeScreen() {
 
   const joinEvent = async (eventId: number) => {
     try {
-      const userId = 1; // TODO: get user ID from auth context
       const response = await axios.post(BACKEND_URL + `/events/embark`, {
         userId,
         eventId,
@@ -197,21 +198,23 @@ export default function HomeScreen() {
   }
 
 //posts new event
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     // Handle form submission
     console.log("Event Name:", eventName);
     console.log("Event Location:", eventLocation);
     submitEvent();
+    await fetchEvents();
+    await fetchEmbarkations();
     // Optionally reset the fields
     setEventName("");
     setEventLocation(undefined);
     setEventDetails("");
     setIsOpen(false); // Close the modal after submission
+    
   };
 
   async function submitEvent() {
     try {
-      const userId = 1; // TODO: get user ID from auth context
       const body = {title: eventName, description: eventDetails, latitude: eventLocation?.lat, longitude: eventLocation?.lng, capacity: 5};
       const response = await axios.post(BACKEND_URL + `/events/create/`, body);
       const responseData = response.data;
@@ -221,7 +224,6 @@ export default function HomeScreen() {
     }
   }
 
-  
   if (isLoading) {
     return null; 
   }
@@ -253,11 +255,8 @@ export default function HomeScreen() {
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Hello World!</Text>
-            <TamaGuiButton onPress={() => setIsOpen(false)}>
-              <Text>Close</Text>
-            </TamaGuiButton>
-            <Text style={styles.modalText}>Create New Event</Text>
+            <TamaGuiButton marginLeft='auto' circular borderBlockColor={'black'} onPress={()=> setIsOpen(false)}><Image width={30} height={30} source={require('../../assets/images/cross.png')}></Image></TamaGuiButton>
+            <TamaGuiView height={30}></TamaGuiView>
 
             <YStack>
               <XStack flexWrap="wrap">
@@ -330,7 +329,8 @@ const styles = StyleSheet.create({
   },
   modalTextArea: {
     backgroundColor: "#8A5A08",
-    minWidth: 300
+    minWidth: 300,
+    marginBottom: 30
   },
   card: {
     fontFamily: 'Arial',  // Use system font
