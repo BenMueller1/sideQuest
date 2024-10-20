@@ -31,6 +31,8 @@ export default function ProfileScreen() {
 
     const [interests, setInterests] = useState<Interest[]>([]);  // All interests from backend
     const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);  // User-selected interest
+
+    const [errorMessage, setMessage] = useState<string>('');
   
     useEffect(() => {
         const fetchUserData = async () => {
@@ -120,17 +122,25 @@ export default function ProfileScreen() {
         setIsEditing(true);
       };
       const handleAddInterest = (id: number) => {
+        console.log(selectedInterests)
         if(selectedInterests.length < 6) {
             const interestToAdd = interests.find(interest => interest.id === id);
             if (interestToAdd) {
                 if (!selectedInterests.some(interest => interest.id === id)) {
                     setSelectedInterests(prevSelected => [...prevSelected, interestToAdd]);
+                    setMessage('');
                 }
             }
+        } else {
+            setMessage("You cannot add more than 6 activities.");
         }
       }
       const handleRemoveInterest = (id: number) => {
         const interestToRemove = interests.find(interest => interest.id === id);
+        console.log(selectedInterests.length)
+            if(selectedInterests.length < 7) {
+                setMessage('');
+            }
             if (interestToRemove) {
                 if (selectedInterests.some(interest => interest.id === id)) {
                     setSelectedInterests(prevSelected => 
@@ -239,6 +249,7 @@ export default function ProfileScreen() {
                     {isEditing && (
                         <>
                             <View style={styles.separatorContainer}>
+                                {errorMessage ? <Text style={{ color: 'red' }}>{errorMessage}</Text> : null}
                                 <View style={styles.separator} /></View>
                             <View style={styles.rowInterests}>
                             {xorInterests.map((interest) => (
