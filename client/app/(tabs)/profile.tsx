@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,  } from "react";
 import {
   StyleSheet,
   View,
@@ -9,14 +9,16 @@ import {
   TouchableOpacity,
   ScrollView,
   Text,
-  SafeAreaView,
   Modal,
+  SafeAreaView,
 } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+import { FontAwesome } from "@expo/vector-icons";
 
 import AutoCompleteInput from "@/components/AutoCompleteInput";
 
@@ -46,12 +48,15 @@ export default function ProfileScreen() {
   const [about, setAbout] = useState<string>("");
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const [embarkations, setEmbarkations] = useState<Embarkation[]>([]);
+  const [embarkationId, setEmbarkationId] = useState<number>();
+  const [embarkationTitle, setEmbarkationTitle] = useState<string>("");
+  const [embarkationDescription, setEmbarkationDescription] = useState<string>("");
+  const [embarkers, setEmbarkers] = useState<number>();
 
   const [errorMessage, setMessage] = useState<string>("");
-  
-  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const fetchUserData = async () => {
     try {
@@ -73,28 +78,30 @@ export default function ProfileScreen() {
       setSelectedInterests(interests);
       setAbout(about);
       setHometown(hometown);
-
-      if(name == null) {
-        setModalIsOpen(true);
-      }
       
     } catch (error) {
       console.error("Error fetching data", error);
     }
     try {
-      const response = await axios.get(
-        "http://localhost:5001/user/interests"
-      );
-      setInterests(response.data);
+        const response = await axios.get("http://localhost:5001/user/interests");
+        setInterests(response.data);
     } catch (error) {
-      console.error("Error fetching interests", error);
+        console.error("Error fetching interests", error);
+    } 
+    try {
+        const response = await axios.get(`http://localhost:5001/user/embarkations/${userId}`);
+        setEmbarkations(response.data)
+    } catch (error) {
+        console.error("Error fetching embarkations", error);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
-  useEffect(() => {
+  useFocusEffect(() => {
     fetchUserData();
+    console.log("fetched");
+    
   }, []);
 
   if (loading) {
@@ -171,8 +178,8 @@ export default function ProfileScreen() {
     }
   };
 
+
   return (
-    <SafeAreaView>
       <Theme name="dark_alt2">
       <ScrollView>
         <View style={styles.container}>
@@ -217,22 +224,22 @@ export default function ProfileScreen() {
                 </>
               )}
             </View>
-            </View>
+        </View>
             {/* Edit/Save Button */}
             {isEditing ? (
               <XStack style={styles.buttonContainer}>
                 <View style={{width:180}}></View>
-                <Button style={styles.saveAndCancel} onPress={handleSave}>
-                  Save
-                </Button>
-                <Button style={styles.saveAndCancel} onPress={handleCancel}>
-                  Cancel
-                </Button>
+                    <Button style={styles.saveAndCancel} onPress={handleSave}>
+                    Save
+                    </Button>
+                    <Button style={styles.saveAndCancel} onPress={handleCancel}>
+                    Cancel
+                    </Button>
               </XStack>
-            ) : (
-              <Button onPress={handleEdit}>Edit</Button>
-            )}
-          </View>
+                    ) : (
+                        <Button onPress={handleEdit}>Edit</Button>
+                    )}
+                </View>
           {/* About Section */}
           <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>
@@ -294,19 +301,25 @@ export default function ProfileScreen() {
 
           {/* Recent Section */}
           <View style={styles.section}>
-            <ThemedText style={styles.header}>Recent</ThemedText>
-            {/* You can add recent activities content here */}
-          </View>
-
-      </ScrollView>
-            {/* Recent Section */}
-            <View style={styles.section}>
-                <ThemedText style={styles.header}>Embarkments</ThemedText>
-                {/* You can add recent activities content here */}
+            <ThemedText style={styles.header}>Embarkations</ThemedText>
+            <View style={styles.rowInterests}>
+                {embarkations.map((embarkation) => (
+                  <TouchableOpacity
+                    key={embarkation.id}
+                    style={styles.interestButton}
+                    onPress={() => {
+                        setShowModal(true);
+                        setEmbarkationDescription(embarkation.event.description);
+                        setEmbarkers(embarkation.embarkers);
+                    }}
+                  >
+                    <Text style={styles.interestText}>{embarkation.event.title}</Text>
+                  </TouchableOpacity>
+                ))}
             </View>
-    </Theme>
-    </SafeAreaView>
-    
+          </View>
+      </ScrollView>
+    </Theme>  
   );
 }
 

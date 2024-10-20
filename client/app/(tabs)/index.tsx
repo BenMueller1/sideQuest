@@ -348,7 +348,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   floatingButton: {
     position: "absolute",
-    bottom: 10,
+    bottom: 20,
     left: "50%",
     transform: [{ translateX: -30 }],
     justifyContent: "center",
