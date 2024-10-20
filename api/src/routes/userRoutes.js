@@ -1,4 +1,3 @@
-const e = require("express");
 const express = require("express");
 // const { haversineDistance } = require("../util/haversineDist");
 const haversineDistance = require("../util/haversineDist");

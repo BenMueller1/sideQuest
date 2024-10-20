@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("./../models/index");
 const { embed, k_nearest } = require("./../util/eventEmbeddings");
+const matchingService = require("./../util/matchingService");
 
 const router = express.Router();
 
@@ -99,6 +100,12 @@ router.get("/embarkations/:eventId", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
+
+router.post("/match", async (req, res) => {
+  await matchingService();
+
+  res.sendStatus(200);
 });
 
 module.exports = router;
