@@ -53,6 +53,7 @@
     "react-native-svg": "^15.8.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.10",
+    "socket.io-client": "^4.8.0",
     "tamagui": "^1.115.5"
   },
   "devDependencies": {
