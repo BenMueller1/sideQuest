@@ -60,7 +60,7 @@ export default function SignUpScreen() {
         login(response.data.id);
         handleQuiz();
       }
-    } catch (error) {
+    } catch (error: any) {
       // Handle any errors from the server or network
       //@ts-ignore
       if (error.response.status === 409) {
@@ -97,7 +97,7 @@ export default function SignUpScreen() {
         setLoginEmail("");
         setLoginPassword("");
       }
-    } catch (error) {
+    } catch (error: any) {
       // Handle any errors from the server or network
       //@ts-ignore 
       if(error.response.status === 404) {

@@ -94,8 +94,8 @@ export default function HomeScreen() {
           latitude: event.latitude ?? 0,
           longitude: event.longitude ?? 0,
           capacity: event.capacity ?? 5,
-          interests: event.interests ?? [],
-        };
+          interests: interests ?? [],
+        }
       });
       setEvents(eventsFromResponse);
     } catch (error) {

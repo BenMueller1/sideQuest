@@ -32,6 +32,39 @@ async function fetchUser(userId){
   return result;
 }
 
+// get a user by id
+router.get("/getUser/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await prisma.user.findUnique({
+      where: {
+        id: parseInt(userId),
+      },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        about: true,
+        latitude: true,
+        longitude: true,
+        interests: true,
+      },
+    });
+    if (!result) {
+      res.status(404).json({ error: "User not found - invalid user ID" });
+      return null;
+    } else {
+      res.status(200).json(result);
+      return result;
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+    console.log(error);
+  }
+})
+
 router.post("/signup", async (req, res) => {
   const { email, password } = req.body;
   const hashed_password = await hashPassword(password);
@@ -228,6 +261,8 @@ router.post("/edit", async (req, res) => {
 
 router.get("/interests", async (req, res) => {
   try {
+    console.log('bm - getting interests');
+    
     const result = await prisma.interest.findMany({
       select: {
         id: true,
@@ -235,6 +270,9 @@ router.get("/interests", async (req, res) => {
         description: true,
       },
     });
+
+    console.log('bm - interests: ')
+
     res.status(200).json(result);
   } catch (error) {
     res.status(401).json({ error: error.message });
