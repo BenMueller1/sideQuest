@@ -18,6 +18,8 @@ import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 
+
+
 Modal.setAppElement('#root');
 import AutoCompleteInput from "@/components/AutoCompleteInput";
 
@@ -40,15 +42,6 @@ export default function ProfileScreen() {
   const [hometown, setHometown] = useState<string>(""); // User-friendly location
   const [homeLocation, setHomeLocation] = useState<Location>();
   const [about, setAbout] = useState<string>("");
-
-  // const [editedName, setEditedName] = useState<string>("");
-  // const [editedAge, setEditedAge] = useState<string>("");
-  // const [editedGender, setEditedGender] = useState<string>("");
-  // const [editedSelectedInterests, setEditedSelectedInterests] = useState<
-  //   Interest[]
-  // >([]);
-  // const [editedAbout, setEditedAbout] = useState<string>("");
-
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
 
@@ -326,7 +319,7 @@ export default function ProfileScreen() {
             <ThemedText style={styles.header}>Recent</ThemedText>
             {/* You can add recent activities content here */}
           </View>
-        </View>
+
       </ScrollView>
     </Theme>
     </SafeAreaView>
