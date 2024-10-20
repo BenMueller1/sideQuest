@@ -56,7 +56,7 @@ export default function SignUpScreen() {
       } else if (response.status === 200) {
         setEmail("");
         setPassword("");
-        setUserId(response.data.id);
+        handleQuiz();
         login(response.data.id);
         handleQuiz();
       }
