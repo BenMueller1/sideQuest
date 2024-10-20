@@ -14,6 +14,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme } from "tamagui";
 import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
 
 type Interest = {
   id: number;
@@ -22,6 +23,7 @@ type Interest = {
 };
 
 export default function ProfileScreen() {
+  const { userId } = useAuth();
   const [userData, setUserData] = useState<any>(null); // State to hold user info
   const [loading, setLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to track edit mode
@@ -36,9 +38,7 @@ export default function ProfileScreen() {
   const [editedName, setEditedName] = useState<string>("");
   const [editedAge, setEditedAge] = useState<string>("");
   const [editedGender, setEditedGender] = useState<string>("");
-  const [editedSelectedInterests, setEditedSelectedInterests] = useState<
-    Interest[]
-  >([]);
+  const [editedSelectedInterests, setEditedSelectedInterests] = useState<Interest[]>([]);
   const [editedAbout, setEditedAbout] = useState<string>("");
 
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
@@ -50,7 +50,7 @@ export default function ProfileScreen() {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5001/user/profile/1"
+          `http://localhost:5001/user/profile/${userId}`
         ); //CHANGE THIS TO USER ID PROP
         const {
           name,
@@ -112,7 +112,7 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     try {
       await axios.post("http://localhost:5001/user/edit", {
-        userId: 1,
+        userId: userId,
         name: editedName,
         age: editedAge,
         gender: editedGender,
