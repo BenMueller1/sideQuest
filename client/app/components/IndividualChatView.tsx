@@ -53,8 +53,10 @@ export default function IndividualChatView({
 
   // load in all usernames after messages populates
   useEffect(() => {
+    console.log('inside useEffect for loading usernames');
     const loadUsernames = async () => {
-      // console.log("bm - message userids", messages.map(msg => msg.userId));
+      console.log('messaged when loading usernames:', JSON.stringify(messages));
+      console.log("bm - loadUsernames() message userids", messages.map(msg => msg.userId));
 
       // Fetch usernames
       const userIds = Array.from(new Set(messages.map(msg => msg.userId)));
@@ -73,7 +75,7 @@ export default function IndividualChatView({
 
       const usernameResults = await Promise.all(usernamePromises);
 
-      // console.log('bm - username results:', JSON.stringify(usernameResults));
+      console.log('bm - loadUsernames() username results:', JSON.stringify(usernameResults));
 
       const usernameMap: { [key: string]: string } = {};
 
@@ -83,7 +85,7 @@ export default function IndividualChatView({
         }
       }
 
-      // console.log('bm - setting username map to ', JSON.stringify(usernameMap));
+      console.log('bm - loadUsernames() setting username map to ', JSON.stringify(usernameMap));
 
       setUsernames(usernameMap);
     }
@@ -103,7 +105,7 @@ export default function IndividualChatView({
     console.log('bm - individual_chat_view: Connecting to socket - roomId: ', currentGroupChat.id);
     socketRef.current.emit('join_room', currentGroupChat.id);
 
-    socketRef.current.on('receive_message', (message) => {
+    socketRef.current.on('receive_message', (message: any) => {
       console.log('bm - individual_chart_vieww: Received message:', message);
       console.log('bm - individual_chat_view: setting messages to:', JSON.stringify([...messages, message]));
       setMessages((prevMessages) => [...prevMessages, message]);
