@@ -149,6 +149,7 @@ export default function SignUpScreen() {
         });
       };
       submitQuizResults();
+      router.replace("/(tabs)")
     }
   }, [showQuizResults]);
 

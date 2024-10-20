@@ -189,15 +189,15 @@ export default function IndividualChatView({
 
   return (
     <View style={styles.container}>
-      {/* Group Title */}
+
       <View style={styles.header}>
         <Text style={styles.groupTitle}>{currentGroupChat.event.title}</Text>
         <TouchableOpacity onPress={onBackPress}>
-          <FontAwesome name="times" size={24} color="#fefefe" />  {/* X icon */}
+          <FontAwesome name="times" size={24} color="#fefefe" /> 
         </TouchableOpacity>
       </View>
 
-      {/* Messages List */}
+
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id.toString()}
@@ -205,7 +205,7 @@ export default function IndividualChatView({
         contentContainerStyle={styles.messagesList}
       />
 
-      {/* Message Input Bar */}
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={80}

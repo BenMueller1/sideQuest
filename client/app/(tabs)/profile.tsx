@@ -48,7 +48,7 @@ export default function ProfileScreen() {
 
   const Logout = () => {
     logout();
-    router.replace("..");
+    router.push("/");
   }
 
   const fetchUserData = async () => {

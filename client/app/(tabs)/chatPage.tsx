@@ -62,11 +62,11 @@ export default function ChatPage() {
 
       // order groups by most recent message
       // if a group has no messages, it should be at the bottom
-      groups.sort((a: Group, b: Group) => {
-        const aLastMessage = a.messages.length > 0 ? a.messages[a.messages.length - 1].createdAt : new Date(0);
-        const bLastMessage = b.messages.length > 0 ? b.messages[b.messages.length - 1].createdAt : new Date(0);
-        return bLastMessage.getTime() - aLastMessage.getTime();
-      });
+      // groups.sort((a: Group, b: Group) => {
+      //   const aLastMessage = a.messages.length > 0 ? a.messages[a.messages.length - 1].createdAt : new Date(0);
+      //   const bLastMessage = b.messages.length > 0 ? b.messages[b.messages.length - 1].createdAt : new Date(0);
+      //   return bLastMessage.getTime() - aLastMessage.getTime();
+      // });
 
       // console.log('bm  HERE???')
       // console.log(`bm - groups: ${JSON.stringify(groups, null, 2)}`);
@@ -109,9 +109,7 @@ export default function ChatPage() {
       <TouchableOpacity style={styles.chatItem} onPress={() => handleChatPress(item.id)}>
         <View>
           <Text style={styles.chatName}>{event.title}</Text>
-          <Text style={styles.lastMessage}>
-            {unseenMessagesCount > 0 ? `${unseenMessagesCount} new messages` : formattedDateString}
-          </Text>
+          
         </View>
         <Text style={styles.chatTime}>{formattedDateString}</Text>
       </TouchableOpacity>
@@ -127,7 +125,6 @@ export default function ChatPage() {
         <IndividualChatView 
           currentGroupChat={selectedChat}
           onBackPress={handleBackFromChatButtonPress}
-          // generate a random number key to force re-rendering of the chat view
           randomKey={Math.random()}
         />
       </SafeAreaView>
