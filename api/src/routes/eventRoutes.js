@@ -1,6 +1,8 @@
 const express = require("express");
 const prisma = require("./../models/index");
 const { embed, k_nearest } = require("./../util/eventEmbeddings");
+const matchingService = require("./../util/matchingService");
+const haversineDistance = require("./../util/haversineDist");
 
 const router = express.Router();
 
@@ -16,7 +18,6 @@ router.get("/all", async (req, res) => {
 router.post("/create", async (req, res) => {
   const { title, description, latitude, longitude, capacity } = req.body;
   try {
-    console.log("attempt to create new event")
     const event = await prisma.event.create({
       data: {
         title,
@@ -51,14 +52,13 @@ router.post("/create", async (req, res) => {
 });
 
 router.post("/embark", async (req, res) => {
-  const { userId, eventId, timeslots } = req.body;
+  const { userId, eventId } = req.body;
 
   try {
     const result = await prisma.embarkation.create({
       data: {
         userId,
         eventId,
-        timeslots,
       },
     });
 
@@ -81,7 +81,7 @@ router.delete("/embark/:embarkationId", async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
-    console.log('bm ERROR');
+    console.log("bm ERROR");
     console.log(error);
     res.status(400).json({ error: error.message });
   }
@@ -100,6 +100,12 @@ router.get("/embarkations/:eventId", async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
+
+router.post("/match", async (req, res) => {
+  await matchingService();
+
+  res.sendStatus(200);
 });
 
 module.exports = router;

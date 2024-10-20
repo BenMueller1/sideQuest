@@ -44,22 +44,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   textInputContainer: {
-    backgroundColor: '#324C30',
+    backgroundColor: '#FFFFFF',
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: 'gray',
   },
   textInput: {
     height: 40, // Match height with other inputs
     paddingLeft: 10,
     borderColor: 'gray', // Match border color
-    backgroundColor: '#324C30',
-    color: '#FFFFFF',
+    backgroundColor: '#FFFFFF',
+    color: '#324C30',
   },
   listView: {
-    backgroundColor: 'white', // Make sure dropdown background matches
+    backgroundColor: '#DED190', // Make sure dropdown background matches
     maxHeight: 200, // Optional: limit height of suggestions
   },
+  row: {
+    backgroundColor: '#DED190'
+  }
 });
 
 export default AutoCompleteInput;
