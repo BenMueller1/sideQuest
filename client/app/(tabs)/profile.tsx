@@ -11,11 +11,14 @@ import {
   Text,
   SafeAreaView,
 } from "react-native";
+import Modal from 'react-modal';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+
+Modal.setAppElement('#root');
 import AutoCompleteInput from "@/components/AutoCompleteInput";
 
 type Interest = {
@@ -37,20 +40,16 @@ export default function ProfileScreen() {
   const [hometown, setHometown] = useState<string>(""); // User-friendly location
   const [homeLocation, setHomeLocation] = useState<Location>();
   const [about, setAbout] = useState<string>("");
-
-  // const [editedName, setEditedName] = useState<string>("");
-  // const [editedAge, setEditedAge] = useState<string>("");
-  // const [editedGender, setEditedGender] = useState<string>("");
-  // const [editedSelectedInterests, setEditedSelectedInterests] = useState<
-  //   Interest[]
-  // >([]);
-  // const [editedAbout, setEditedAbout] = useState<string>("");
-
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
 
   const [errorMessage, setMessage] = useState<string>("");
   
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  const openModal = () => setModalIsOpen(true);
+  const closeModal = () => setModalIsOpen(false);
+
   const fetchUserData = async () => {
     try {
       const response = await axios.get(
@@ -71,6 +70,11 @@ export default function ProfileScreen() {
       setSelectedInterests(interests);
       setAbout(about);
       setHometown(hometown);
+
+      if(name == null) {
+        openModal();
+        console.log("ghelp")
+      }
       
     } catch (error) {
       console.error("Error fetching data", error);
@@ -225,8 +229,30 @@ export default function ProfileScreen() {
             ) : (
               <Button onPress={handleEdit}>Edit</Button>
             )}
-         
+          </View>
+            <ThemedText>
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={closeModal}
+                contentLabel="Modal"
+                style={{
+                content: {
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    transform: 'translate(-50%, -50%)',
+                    flexDirection:"column",
+                    justifyContent:'center',
+                    alignItems:'center',
 
+                },
+                }}
+            >
+                <h2>Fill out your personal info!</h2>
+                <Button onPress={closeModal}>Ok!</Button>
+            </Modal>
+            </ThemedText>
           {/* About Section */}
           <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>
@@ -291,7 +317,7 @@ export default function ProfileScreen() {
             <ThemedText style={styles.header}>Recent</ThemedText>
             {/* You can add recent activities content here */}
           </View>
-        </View>
+
       </ScrollView>
     </Theme>
     </SafeAreaView>

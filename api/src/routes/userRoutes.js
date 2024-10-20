@@ -8,7 +8,11 @@ const { embed } = require("../util/eventEmbeddings");
 
 const router = express.Router();
 
-async function fetchUser(userId) {
+function intersection(arr1, arr2) {
+  return arr1.filter((item) => arr2.includes(item));
+}
+
+async function fetchUser(userId){
   const result = await prisma.user.findUnique({
     where: {
       id: parseInt(userId),
@@ -62,13 +66,59 @@ router.post("/login", async (req, res) => {
 
     if (!result) {
       res.status(404).json({ error: "User with this email not found." });
-    } else if (verifyPassword(password, result.hashed_password)) {
+    } else if (await verifyPassword(password, result.hashed_password)) {
       res.status(200).json(result);
     } else {
       res.status(403).json({ error: "Incorrect password." });
     }
   } catch (error) {
     console.log(error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get("/feed/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+      include: { interests: { select: { id: true } } },
+    });
+
+    user.interests = user.interests.map((interest) => interest.id);
+
+    let result = await prisma.event.findMany({
+      include: { interests: { select: { id: true } } },
+    });
+
+    result.forEach((event) => {
+      event.interests = event.interests.map((interest) => interest.id);
+    });
+
+    if (user.latitude && user.longitude) {
+      result = result.filter(
+        (event) =>
+          haversineDistance(
+            event.latitude,
+            event.longitude,
+            user.latitude,
+            user.longitude
+          ) < 25
+      );
+    }
+
+    if (user.interests.length > 0) {
+      result = result.sort((a, b) => {
+        const commonA = intersection(a.interests, user.interests).length;
+        const commonB = intersection(b.interests, user.interests).length;
+
+        return commonB - commonA;
+      });
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
@@ -83,26 +133,7 @@ router.get("/embarkations/:userId", async (req, res) => {
         userId: parseInt(userId),
       },
     });
-    const user = fetchUser(userId);
-    if (!user) {
-      console.error("user not found");
-      // res.status(200).json(result);
-      res.status(404).json({ error: "User with this email not found." });
-
-      return;
-    } else {
-      // const filtered = result.filter(
-      //   (res) =>
-      //     haversineDistance(
-      //       res.latitude,
-      //       res.longitude,
-      //       user.latitude,
-      //       user.longitude
-      //     ) >= DISTANCE_LIMIT
-      // );
-      res.status(200).json(result);
-      // result.sort();
-    }
+    res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -112,7 +143,21 @@ router.get("/profile/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const result = await fetchUser(userId);
+    const result = await prisma.user.findUnique({
+      where: {
+        id: parseInt(userId),
+      },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        about: true,
+        latitude: true,
+        longitude: true,
+        interests: true,
+      },
+    });
     if (!result) {
       res.status(404).json({ error: "User not found - invalid user ID" });
       return null;
@@ -196,39 +241,6 @@ router.get("/interests", async (req, res) => {
   }
 });
 
-router.post("/interests", async (req, res) => {
-  const { userId, interests } = req.body;
-
-  try {
-    const result = await prisma.user.update({
-      where: { id: parseInt(userId) },
-      data: {
-        interests: {
-          connect: interests.map((id) => ({ id })),
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        gender: true,
-        about: true,
-        latitude: true,
-        longitude: true,
-        interests: true,
-      },
-    });
-
-    res.status(201).json(result);
-  } catch (error) {
-    if (error.code === "P2025") {
-      res.status(404).json({ error: "User not found" });
-    } else {
-      res.status(400).json({ error: error.message });
-    }
-  }
-});
-
 router.get("/quiz", async (req, res) => {
   try {
     const result = await prisma.question.findMany({
@@ -236,9 +248,11 @@ router.get("/quiz", async (req, res) => {
         questionNumber: "asc",
       },
     });
+    
 
     res.status(200).json(result);
   } catch (error) {
+    
     res.status(400).json({ error: error.message });
   }
 });
@@ -265,7 +279,6 @@ router.post("/quiz", async (req, res) => {
     }
 
     const embedding = await embed(256, inputString);
-    console.log(embedding);
 
     const user = await prisma.user.update({
       where: { id: parseInt(userId) },
@@ -273,8 +286,6 @@ router.post("/quiz", async (req, res) => {
         personaEmbedding: embedding,
       },
     });
-
-    console.log(user);
 
     res.status(200).send(user);
   } catch (error) {
