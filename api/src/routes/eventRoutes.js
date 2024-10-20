@@ -15,6 +15,20 @@ router.get("/all", async (req, res) => {
   }
 });
 
+router.get("/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const result = await prisma.event.findUnique({
+      where: {
+        id: parseInt(eventId),
+      },
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
+
 router.post("/create", async (req, res) => {
   const { title, description, latitude, longitude, capacity } = req.body;
   try {
