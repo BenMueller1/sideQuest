@@ -10,17 +10,14 @@ import {
   ScrollView,
   Text,
   SafeAreaView,
+  Modal,
 } from "react-native";
-import Modal from 'react-modal';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Theme, XStack } from "tamagui";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 
-
-
-Modal.setAppElement('#root');
 import AutoCompleteInput from "@/components/AutoCompleteInput";
 
 type Interest = {
@@ -49,33 +46,12 @@ export default function ProfileScreen() {
   const [about, setAbout] = useState<string>("");
   const [interests, setInterests] = useState<Interest[]>([]); // All interests from backend
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]); // User-selected interest
-    const [userData, setUserData] = useState<any>(null);  // State to hold user info
-    const [loading, setLoading] = useState<boolean>(true);
-    const [isEditing, setIsEditing] = useState<boolean>(false); // State to track edit mode
-    const [name, setName] = useState<string>('');
-    const [age, setAge] = useState<string>('');
-    const [gender, setGender] = useState<string>('');
-    const [location, setLocation] = useState<string>(''); // User-friendly location
-    const [latitude, setLatitude] = useState<string>(''); // Latitude
-    const [longitude, setLongitude] = useState<string>('');
-    const [about, setAbout] = useState<string>('');
 
-    const [editedName, setEditedName] = useState<string>('');
-    const [editedAge, setEditedAge] = useState<string>('');
-    const [editedGender, setEditedGender] = useState<string>('');
-    const [editedSelectedInterests, setEditedSelectedInterests] = useState<Interest[]>([]);
-    const [editedAbout, setEditedAbout] = useState<string>('');
-
-    const [interests, setInterests] = useState<Interest[]>([]);  // All interests from backend
-    const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);  // User-selected interest
-    const [embarkations, setEmbarkations] = useState<Embarkation[]>([]);
+  const [embarkations, setEmbarkations] = useState<Embarkation[]>([]);
 
   const [errorMessage, setMessage] = useState<string>("");
   
   const [modalIsOpen, setModalIsOpen] = useState(false);
-
-  const openModal = () => setModalIsOpen(true);
-  const closeModal = () => setModalIsOpen(false);
 
   const fetchUserData = async () => {
     try {
@@ -99,8 +75,7 @@ export default function ProfileScreen() {
       setHometown(hometown);
 
       if(name == null) {
-        openModal();
-        console.log("ghelp")
+        setModalIsOpen(true);
       }
       
     } catch (error) {
@@ -117,47 +92,10 @@ export default function ProfileScreen() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUserData();
   }, []);
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5001/user/profile/${userId}`) //CHANGE THIS TO USER ID PROP
-                const { name, age, gender, latitude, longitude, interests, about } = response.data;
-
-                setUserData(response.data);
-                setName(name);
-                setAge(age);
-                setGender(gender);
-                setSelectedInterests(interests);
-                setAbout(about);
-                console.log(about)
-                // setLatitude(latitude.toString());
-                // setLongitude(longitude.toString());
-                //const locationFromCoords = await getLocationFromCoords(latitude, longitude);
-                //setLocation(locationFromCoords);
-            } catch (error) {
-                console.error("Error fetching data", error);
-            } 
-            try {
-                const response = await axios.get('http://localhost:5001/user/interests');
-                setInterests(response.data);
-              } catch (error) {
-                console.error('Error fetching interests', error);
-              } 
-            try {
-                const response = await axios.get(`https://localhost:5001/user/embarkations/${userId}`)
-                setEmbarkations(response.data);
-                console.log(response.data)
-            } catch(error) {
-                console.error('Error fetching embarkations', error);
-            }finally {
-                setLoading(false);
-            }
-        };
-        fetchUserData();
-    }, []);
 
   if (loading) {
     return (
@@ -295,29 +233,6 @@ export default function ProfileScreen() {
               <Button onPress={handleEdit}>Edit</Button>
             )}
           </View>
-            <ThemedText>
-            <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Modal"
-                style={{
-                content: {
-                    top: '50%',
-                    left: '50%',
-                    right: 'auto',
-                    bottom: 'auto',
-                    transform: 'translate(-50%, -50%)',
-                    flexDirection:"column",
-                    justifyContent:'center',
-                    alignItems:'center',
-
-                },
-                }}
-            >
-                <h2>Fill out your personal info!</h2>
-                <Button onPress={closeModal}>Ok!</Button>
-            </Modal>
-            </ThemedText>
           {/* About Section */}
           <View style={styles.section}>
             <ThemedText style={styles.header}>About</ThemedText>
@@ -389,8 +304,6 @@ export default function ProfileScreen() {
                 <ThemedText style={styles.header}>Embarkments</ThemedText>
                 {/* You can add recent activities content here */}
             </View>
-        </View>
-        </ScrollView>
     </Theme>
     </SafeAreaView>
     
