@@ -22,7 +22,6 @@ export default function HomeScreen() {
   // pull all events from backend on load
   async function fetchEvents() {
     try {
-      console.log('bm - fetchEvents');
       const response = await axios.get(BACKEND_URL + "/events/all");
       const responseData = response.data;
       const eventsFromResponse = responseData.map((event: any) => {
@@ -63,7 +62,6 @@ export default function HomeScreen() {
   const renderExpandedItem = ({ item }: { item: EventType }) => {
     return (
       <TouchableOpacity onPress={() => {
-        console.log(`Pressed event ${item.id}`);
         setExtendedEventId(null);
       }}>
         <View style={styles.expandedCard}>
@@ -90,7 +88,6 @@ export default function HomeScreen() {
   const renderItem = ({ item }: { item: EventType }) => {
     return (
       <TouchableOpacity onPress={() => {
-        console.log(`Pressed event ${item.id}`);
         setExtendedEventId(item.id);
       }}>
         <View style={styles.card}>
