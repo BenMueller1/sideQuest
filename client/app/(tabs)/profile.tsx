@@ -10,6 +10,10 @@ type Interest = {
     name: string;
     description: string;
   };
+type Embarkation = {
+    id: number;
+    name: string;
+};
 
 export default function ProfileScreen() {
     const [userData, setUserData] = useState<any>(null);  // State to hold user info
@@ -31,13 +35,14 @@ export default function ProfileScreen() {
 
     const [interests, setInterests] = useState<Interest[]>([]);  // All interests from backend
     const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);  // User-selected interest
+    const [embarkations, setEmbarkations] = useState<Embarkation[]>([]);
 
     const [errorMessage, setMessage] = useState<string>('');
   
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('http://localhost:5001/user/profile/1') //CHANGE THIS TO USER ID PROP
+                const response = await axios.get(`http://localhost:5001/user/profile/${userId}`) //CHANGE THIS TO USER ID PROP
                 const { name, age, gender, latitude, longitude, interests, about } = response.data;
 
                 setUserData(response.data);
@@ -59,7 +64,14 @@ export default function ProfileScreen() {
                 setInterests(response.data);
               } catch (error) {
                 console.error('Error fetching interests', error);
-              } finally {
+              } 
+            try {
+                const response = await axios.get(`https://localhost:5001/user/embarkations/${userId}`)
+                setEmbarkations(response.data);
+                console.log(response.data)
+            } catch(error) {
+                console.error('Error fetching embarkations', error);
+            }finally {
                 setLoading(false);
             }
         };
@@ -268,7 +280,7 @@ export default function ProfileScreen() {
 
             {/* Recent Section */}
             <View style={styles.section}>
-                <ThemedText style={styles.header}>Recent</ThemedText>
+                <ThemedText style={styles.header}>Embarkments</ThemedText>
                 {/* You can add recent activities content here */}
             </View>
         </View>

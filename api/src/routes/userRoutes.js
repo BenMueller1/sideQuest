@@ -59,7 +59,16 @@ router.get("/embarkations/:userId", async (req, res) => {
       where: {
         userId: parseInt(userId),
       },
+      include: {
+        event: true
+      }
     });
+
+    for (let embarkation of result) {
+      embarkation.embarkers = await prisma.embarkation.count({
+        where: {eventId: embarkation.eventId}
+      })
+    }
 
     res.status(200).json(result);
   } catch (error) {
