@@ -17,7 +17,7 @@ router.post("/signup", async (req, res) => {
         hashed_password,
       },
     });
-
+    console.log(email);
     res.status(200).json(result);
   } catch (error) {
     if (error.code === "P2002") {
@@ -25,6 +25,7 @@ router.post("/signup", async (req, res) => {
         error: "There is already an account associated with this email.",
       });
     } else {
+      console.log(error.message)
       res.status(400).json({ error: error.message });
     }
   }
