@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, TextInput, Alert, View } from "react-native";
+import { StyleSheet, TextInput, Alert, View, Modal } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
-import { Button, Theme, H3, SizableText } from "tamagui";
+import { Button, Theme, H3, SizableText, Card, Text } from "tamagui";
 import axios from "axios";
+import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 // import 'dotenv/config';
 
 export default function SignUpScreen() {
@@ -10,6 +13,9 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState<string>("");
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
+
+  const [showQuiz, setShowQuiz] = useState<boolean>(false);
+  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
 
   const handleSignUp = async (): Promise<void> => {
     if (!email || !password) {
@@ -30,11 +36,11 @@ export default function SignUpScreen() {
       // Handle the response from the backend
       if (response.status === 409) {
         Alert.alert("Error", "This email already exists.");
-      }
-      if (response.status === 200) {
+      } else if (response.status === 200) {
         Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
+        handleQuiz();
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -56,6 +62,13 @@ export default function SignUpScreen() {
       // Handle the response from the backend
       if (response.status === 200) {
         Alert.alert("Success", response.data.message);
+        console.log("ok");
+
+        setLoginEmail("");
+        setLoginPassword("");
+        router.replace("/(tabs)");
+        // handleQuiz();
+      } else {
         setLoginEmail("");
         setLoginPassword("");
       }
@@ -63,6 +76,10 @@ export default function SignUpScreen() {
       // Handle any errors from the server or network
       Alert.alert("Error", "An error occurred during sign-up.");
     }
+  };
+
+  const handleQuiz = async (): Promise<void> => {
+    setShowQuiz(true);
   };
 
   const validateEmail = (email: string): boolean => {
@@ -121,6 +138,17 @@ export default function SignUpScreen() {
           Log In
         </Button>
       </View>
+
+      <Modal transparent={true} visible={showQuiz}>
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Hello World!</Text>
+            <Button onPress={() => setShowQuiz(false)}>
+              <Text>Close</Text>
+            </Button>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </Theme>
   );
 }
@@ -161,5 +189,19 @@ const styles = StyleSheet.create({
   },
   separatorText: {
     marginHorizontal: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center", // Center content vertically
+    alignItems: "center", // Center content horizontally
+    backgroundColor: "white", // Set a background color for visibility
+  },
+  modalContent: {
+    padding: 20,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 24,
+    marginBottom: 20, // Space between text and button
   },
 });
