@@ -1,5 +1,6 @@
 import { StyleSheet, FlatList, View, Modal, Text, Button, TouchableOpacity, Touchable } from "react-native";
 import { EventType, InterestType } from "../../assets/types/Event";
+import { EmbarkationType } from "../../assets/types/Embarkation";
 import { events } from "../../assets/dummy";
 import type { CardProps } from 'tamagui'
 import { Button as TamaGuiButton, Text as TamaGuiText } from 'tamagui'
@@ -18,6 +19,9 @@ export default function HomeScreen() {
 
   // null means no event is currently extended
   const [extendedEventId, setExtendedEventId] = useState<number | null>(null);
+
+  const [isUserEnrolledInSelectedEvent, setIsUserEnrolledInSelectedEvent] = useState(false);
+  const [currentUserEmbarkations, setCurrentUserEmbarkations] = useState<EmbarkationType[]>([]);
 
   // pull all events from backend on load
   async function fetchEvents() {
@@ -42,16 +46,46 @@ export default function HomeScreen() {
         }
       });
       setEvents(eventsFromResponse);
-      setIsLoading(false);
     } catch (error) {
       console.error('Error:', error);  // Handle any errors
     }
   }
 
-  // runs on load
+  async function fetchEmbarkations() {
+    try {
+      const userId = 1; // TODO: get user ID from auth context
+      const response = await axios.get(BACKEND_URL + `/user/embarkations/${userId}`);
+      const responseData = response.data;
+      const embarkationsFromResponse = responseData.map((embarkation: any) => {
+        return {
+          id: embarkation.id,
+          userId: embarkation.userId,
+          eventId: embarkation.eventId,
+        }
+      });
+      setCurrentUserEmbarkations(embarkationsFromResponse);
+    } catch (error) {
+      console.error('Error:', error);  // Handle any errors
+    }
+  }
+
+  // fetch all data on initial load
   useEffect(() => {
-    fetchEvents();
+    const fetchData = async () => {
+      await fetchEvents();
+      await fetchEmbarkations();
+      setIsLoading(false);
+    }
+    fetchData();
   }, []);
+
+
+  // check whether the user is enrolled in the selected event
+  useEffect(() => {
+    if (extendedEventId) {
+      setIsUserEnrolledInSelectedEvent(currentUserEmbarkations.some((embarkation) => embarkation.eventId === extendedEventId));
+    }
+  }, [extendedEventId, currentUserEmbarkations, events]);
 
   // const { userId, eventId, timeslots } = req.body;
   // const joinEvent = async (eventId: number) => {
@@ -68,7 +102,7 @@ export default function HomeScreen() {
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             <View style={styles.cardCapacityContainer}>
-              <Text style={styles.cardCapacity}>1/{item.capacity}</Text>
+              <Text style={styles.cardCapacity}>{item.capacity}</Text>
               <FontAwesome name="user" size={16} color="#f0f0f0" />
             </View>
           </View>
@@ -76,9 +110,9 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.joinButton}
-            onPress={() => console.log(`Joining event ${item.title}`)}
+            onPress={() => isUserEnrolledInSelectedEvent ? unjoinEvent(item.id) : joinEvent(item.id)}
           >
-            <Text style={styles.joinButtonText}>Join</Text>
+            <Text style={styles.joinButtonText}>{isUserEnrolledInSelectedEvent ? ("Unjoin") : ("Join")}</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -94,7 +128,7 @@ export default function HomeScreen() {
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             <View style={styles.cardCapacityContainer}>
-              <Text style={styles.cardCapacity}>1/{item.capacity}</Text>
+              <Text style={styles.cardCapacity}>{item.capacity}</Text>
               <FontAwesome name="user" size={16} color="#f0f0f0" /> {/* User icon from @expo/vector-icons */}
             </View>
           </View>
@@ -108,6 +142,32 @@ export default function HomeScreen() {
       return renderExpandedItem({ item });
     } else {
       return renderItem({ item });
+    }
+  }
+
+  const unjoinEvent = async (eventId: number) => {
+    try {
+      const emarkIdToDelete = currentUserEmbarkations.find((embarkation) => embarkation.eventId === eventId)?.id;
+      const response = await axios.delete(BACKEND_URL + `/events/embark/${emarkIdToDelete}`)
+
+      fetchEmbarkations();
+
+    } catch (error) {
+      console.error('Error:', error);  // Handle any errors
+    }
+  }
+
+  const joinEvent = async (eventId: number) => {
+    try {
+      const userId = 1; // TODO: get user ID from auth context
+      const response = await axios.post(BACKEND_URL + `/events/embark`, {
+        userId,
+        eventId,
+      });
+      
+      fetchEmbarkations();
+    } catch (error) {
+      console.error('Error:', error);  // Handle any errors
     }
   }
   
