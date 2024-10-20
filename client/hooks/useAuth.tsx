@@ -11,12 +11,13 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Create a provider component
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [userId, setUserId] = useState<string | null>(null);
 
   // Function to handle login
   const login = (id: string) => {
-    console.log(id);
     setUserId(id);
   };
 
