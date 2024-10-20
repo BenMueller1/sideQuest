@@ -52,8 +52,17 @@ export default function ProfileScreen() {
         const response = await axios.get(
           "http://localhost:5001/user/profile/1"
         ); //CHANGE THIS TO USER ID PROP
-        const { name, age, gender, latitude, longitude, interests, about } =
-          response.data;
+        const {
+          name,
+          age,
+          gender,
+          latitude,
+          longitude,
+          interests = [],
+          about,
+        } = response.data;
+
+        console.log(interests);
 
         setUserData(response.data);
         setName(name);
