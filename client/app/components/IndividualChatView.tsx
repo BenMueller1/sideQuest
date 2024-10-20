@@ -4,8 +4,11 @@ import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Keyboard
 import { formatDistanceToNow } from 'date-fns';
 import { Group } from '@/assets/types/Group';
 import axios from 'axios';
+import io from 'socket.io-client';
 
 const BACKEND_URL = "http://localhost:5001";
+const socket = io(BACKEND_URL);
+
 
 type IndividualChatViewProps = {
   currentGroupChat: Group;
@@ -20,34 +23,57 @@ export default function IndividualChatView({
   const [messageText, setMessageText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // runs on initial load
   useEffect(() => {
     const loadData = async () => {
       const msgs = currentGroupChat?.messages ?? [];
       setMessages(msgs);
+      setIsLoading(false);
     }
     loadData();
+
+    // set up socket on initial load
+    socket.emit('join_room', currentGroupChat.id);
+
+    socket.on('receive_message', (message) => {
+      console.log('bm - Received message:', message);
+      setMessages([...messages, message]);
+    })
+  
+    // clean up socket (no memory leaks)
+    return () => {
+      socket.off('receive_message');
+      socket.disconnect();
+    };
   }, [])
 
   const sendMessage = async () => {
     if (messageText.trim() === '') return;  // Don't send empty messages
 
-    const result = await axios.post(BACKEND_URL + `/groups/message`, {
-      groupId: currentGroupChat.id,
-      senderId: 1, // TODO replace with actual user id once we have user session storage
+    // const result = await axios.post(BACKEND_URL + `/groups/message`, {
+    //   groupId: currentGroupChat.id,
+    //   senderId: 1, // TODO replace with actual user id once we have user session storage
+    //   content: messageText,
+    // })
+    // const resultData = result.data;
+
+    socket.emit('send_message', {
       content: messageText,
-    })
-    const resultData = result.data;
-    const newMessage: Message = {
-      id: resultData.id,
-      groupId: resultData.groupId,
-      userId: resultData.userId,
-      content: resultData.content,
-      createdAt: resultData.createdAt,
-      seenBy: resultData.seenBy,
-    };
+      senderId: 1, // TODO set to actual userId once we have session stuff
+      groupId: currentGroupChat.id,
+    });
+
+    // const newMessage: Message = {
+    //   id: resultData.id,
+    //   groupId: resultData.groupId,
+    //   userId: resultData.userId,
+    //   content: resultData.content,
+    //   createdAt: resultData.createdAt,
+    //   seenBy: resultData.seenBy,
+    // };
 
     // Add new message to the list
-    setMessages([...messages, newMessage]);
+    // setMessages([...messages, newMessage]);
     setMessageText('');  // Clear the input field after sending
   };
 

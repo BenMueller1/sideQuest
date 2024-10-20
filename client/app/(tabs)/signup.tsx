@@ -22,7 +22,7 @@ export default function SignUpScreen() {
 
     try {
       // Make a POST request to your Express server
-      const response = await axios.post(`http://localhost:5000/user/signup`, {
+      const response = await axios.post(`http://localhost:5001/user/signup`, {
         email,
         password,
       });
@@ -48,7 +48,7 @@ export default function SignUpScreen() {
     }
     try {
       // Make a POST request to your Express server
-      const response = await axios.post(`http://localhost:5000/user/login`, {
+      const response = await axios.post(`http://localhost:5001/user/login`, {
         email: loginEmail,
         password: loginPassword,
       });
