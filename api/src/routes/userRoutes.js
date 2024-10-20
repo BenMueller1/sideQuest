@@ -39,9 +39,7 @@ router.post("/login", async (req, res) => {
 
     if (!result) {
       res.status(404).json({ error: "User with this email not found." });
-    }
-
-    if (verifyPassword(password, result.hashed_password)) {
+    } else if (verifyPassword(password, result.hashed_password)) {
       res.sendStatus(200);
     } else {
       res.status(403).json({ error: "Incorrect password." });
@@ -73,7 +71,7 @@ router.get("/profile/:userId", async (req, res) => {
   try {
     const result = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: parseInt(userId),
       },
       select: {
         id: true,
@@ -147,7 +145,7 @@ router.post("/interests", async (req, res) => {
 
   try {
     const result = await prisma.user.update({
-      where: { id: userId },
+      where: { id: parseInt(userId) },
       data: {
         interests: {
           connect: interests.map((id) => ({ id })),
