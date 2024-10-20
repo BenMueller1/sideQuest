@@ -172,7 +172,7 @@ export default function SignUpScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor="#888"
           value={loginEmail}
           onChangeText={setLoginEmail}
@@ -273,6 +273,7 @@ const styles = StyleSheet.create({
   },
   separatorText: {
     marginHorizontal: 10,
+    color: "#324C30",
   },
   modalContainer: {
     flex: 1,
