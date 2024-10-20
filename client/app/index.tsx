@@ -17,7 +17,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState<string>("");
   const [loginEmail, setLoginEmail] = useState<string>(""); // New state for login email
   const [loginPassword, setLoginPassword] = useState<string>(""); // New state for login password
-  const {login} = useAuth();
+  const { login } = useAuth();
 
   const [showQuizInstructions, setShowQuizInstructions] =
     useState<boolean>(false);
@@ -50,11 +50,10 @@ export default function SignUpScreen() {
         Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
-        setUserId(response.data.id);
+        // setUserId(response.data.id);
         handleQuiz();
         login(response.data.id);
         router.replace("/(tabs)");
-
       }
     } catch (error) {
       // Handle any errors from the server or network
@@ -82,7 +81,7 @@ export default function SignUpScreen() {
         setLoginPassword("");
         login(response.data.id);
         router.replace("/(tabs)");
-        
+
         // handleQuiz();
       } else {
         setLoginEmail("");
