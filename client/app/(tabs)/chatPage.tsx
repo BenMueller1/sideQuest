@@ -18,6 +18,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<Group | null>(null);
   const userId = (useAuth()).userId;
+  console.log('bm - userId in chatPage.tsx: ', userId);
   
   const [userGroups, setUserGroups] = useState<Group[]>([]);
 
@@ -80,7 +81,7 @@ export default function ChatPage() {
     if (!userGroups) { return; }
     const group = userGroups.find((group: Group) => group.id === groupId);
     
-    console.log('bm - setting selected chat to ', JSON.stringify(group, null, 2));
+    // console.log('bm - setting selected chat to ', JSON.stringify(group, null, 2));
 
     setSelectedChat(group ?? null);
   };

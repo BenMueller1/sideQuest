@@ -28,6 +28,23 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// get all messages from a group
+router.get("/messages/:groupId", async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const result = await prisma.message.findMany({
+      where: {
+        groupId: parseInt(groupId),
+      },
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
+
 // add a message to a group
 router.post("/message", async (req, res) => {
   const { groupId, senderId, content } = req.body;

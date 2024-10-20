@@ -6,7 +6,7 @@ module.exports = (io) => {
   
       // Example: Listen for a 'join_room' event
       socket.on('join_room', (roomId) => {
-        console.log(`User joined room: ${roomId}`);
+        console.log(`User joined roomId: ${roomId}`);
         socket.join(roomId);
       });
   
@@ -29,11 +29,14 @@ module.exports = (io) => {
             }
             });
 
+            console.log('bm - socketHandler - saved new message to db: ', JSON.stringify(newMessage));
+
             const roomId = messageData.groupId;
+            console.log('bm - socketHandler - emitting receive_message event to roomId: ', roomId);
             io.to(roomId).emit('receive_message', {
                 id: newMessage.id,
                 content: newMessage.content,
-                senderId: newMessage.senderId,
+                userId: newMessage.userId,
                 groupId: newMessage.groupId,
                 seenBy: newMessage.seenBy,
                 createdAt: newMessage.createdAt,
