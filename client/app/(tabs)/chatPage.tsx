@@ -7,8 +7,8 @@ import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-ic
 import { Group } from "../../assets/types/Group";
 import { Message } from "../../assets/types/Message";
 import { EventType, InterestType } from "../../assets/types/Event";
-import { formatDistanceToNow } from 'date-fns';
-
+import { formatDistanceToNow, set } from 'date-fns';
+import IndividualChatView from "../components/IndividualChatView";
 
 const BACKEND_URL = "http://localhost:5001";
 
@@ -26,11 +26,11 @@ export default function ChatPage() {
       // fetch groups
       const groupResponseData = (await axios.get(BACKEND_URL + `/groups/user/${userId}`)).data;
 
-      console.log(`bm - groupResponseData: ${groupResponseData}`);
+      // console.log(`bm - groupResponseData: ${groupResponseData}`);
 
       const groups: Group[] = await Promise.all(groupResponseData.map(async (groupData: any) => {
-        console.log(`bm - groupData: ${groupData}`);
-        console.log('bm - making event request to', BACKEND_URL + `/events/${groupData.eventId}`);
+        // console.log(`bm - groupData: ${groupData}`);
+        // console.log('bm - making event request to', BACKEND_URL + `/events/${groupData.eventId}`);
         const event: any = (await axios.get(BACKEND_URL + `/events/${groupData.eventId}`)).data;
 
         const group: Group = {
@@ -52,7 +52,7 @@ export default function ChatPage() {
             userId: message.userId,
             content: message.content,
             createdAt: message.createdAt,
-            seenBy: message.seenBy?.map((user: any) => user.id) ?? [],
+            seenBy: message.seenBy ?? [],
           })) ?? [],
         }
 
@@ -67,8 +67,8 @@ export default function ChatPage() {
         return bLastMessage.getTime() - aLastMessage.getTime();
       });
 
-      console.log('bm  HERE???')
-      console.log(`bm - groups: ${JSON.stringify(groups, null, 2)}`);
+      // console.log('bm  HERE???')
+      // console.log(`bm - groups: ${JSON.stringify(groups, null, 2)}`);
 
       setUserGroups(groups);
     } catch(e) {
@@ -77,7 +77,16 @@ export default function ChatPage() {
   }
 
   const handleChatPress = (groupId: number) => {
+    if (!userGroups) { return; }
+    const group = userGroups.find((group: Group) => group.id === groupId);
+    
+    console.log('bm - setting selected chat to ', JSON.stringify(group, null, 2));
 
+    setSelectedChat(group ?? null);
+  };
+
+  const handleBackFromChatButtonPress = () => {
+    setSelectedChat(null);
   }
 
   useEffect(() => {
@@ -110,6 +119,18 @@ export default function ChatPage() {
   };
 
   if (isLoading) { return; }
+
+  // if selectedChat is not null render the chat view
+  if (selectedChat) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <IndividualChatView 
+          currentGroupChat={selectedChat}
+          onBackPress={handleBackFromChatButtonPress}
+        />
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>

@@ -28,4 +28,38 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// add a message to a group
+router.post("/message", async (req, res) => {
+  const { groupId, senderId, content } = req.body;
+
+  console.log('data passed to message create endpoint');
+  console.log(JSON.stringify(req.body));
+
+  try {
+    const result = await prisma.message.create({
+      data: {
+        content: content,
+        // userId: parseInt(senderId),
+        sender: {
+          connect: {
+            id: parseInt(senderId),
+          },
+        },
+        // groupId: parseInt(groupId),
+        group: {
+          connect: {
+            id: parseInt(groupId),
+          },
+        },
+        seenBy: [parseInt(senderId)], // of cours you've seen your own message by default
+      },
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.log('error creating message: ', error);
+    res.status(401).json({ error: error.message });
+  }
+});
+
 module.exports = router;
