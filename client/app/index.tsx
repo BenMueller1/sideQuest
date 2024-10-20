@@ -50,7 +50,6 @@ export default function SignUpScreen() {
         Alert.alert("Success", response.data.message);
         setEmail("");
         setPassword("");
-        setUserId(response.data.id);
         handleQuiz();
         login(response.data.id);
         router.replace("/(tabs)");
