@@ -1,10 +1,13 @@
 import React from 'react';
 import { GooglePlacesAutocomplete, Point } from 'react-native-google-places-autocomplete';
 import { StyleSheet } from 'react-native';
-
+type Location = {
+    lat: number; // Latitude
+    lng: number; // Longitude
+  };
 interface props {
     updateEventPlace : React.Dispatch<React.SetStateAction<string>>,
-    updateEventLocation : React.Dispatch<React.SetStateAction<Point | undefined>>
+    updateEventLocation : React.Dispatch<React.SetStateAction<Location | undefined>>
 }
 const AutoCompleteInput = (props : props) => {
     const {updateEventPlace, updateEventLocation} = props;
@@ -17,7 +20,7 @@ const AutoCompleteInput = (props : props) => {
         console.log(data);
         const mainText = data.structured_formatting.main_text;
         updateEventPlace(mainText);
-        const location  = details?.geometry.location;
+        const location = details?.geometry.location as any as Location;
         updateEventLocation(location);
       }}
       query={{

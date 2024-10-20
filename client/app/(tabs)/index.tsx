@@ -21,7 +21,6 @@ import { FontAwesome } from '@expo/vector-icons'; // Import from @expo/vector-ic
 
 import { PlaceSuggestion } from "@/assets/types/PlaceSuggestions";
 import AutoCompleteInput from "@/components/AutoCompleteInput";
-import { Point } from "react-native-google-places-autocomplete";
 
 const BACKEND_URL = "http://localhost:5001";
 type Location = {
@@ -50,7 +49,7 @@ export default function HomeScreen() {
   //states for new event
   const [eventName, setEventName] = useState("");
   const [eventPlace, setEventPlace] = useState("");
-  const [eventLocation, setEventLocation] = useState<Point>();
+  const [eventLocation, setEventLocation] = useState<Location>();
   const [eventDetails, setEventDetails] = useState("");
 
   // pull all events from backend on load
@@ -155,7 +154,7 @@ export default function HomeScreen() {
             <Text style={styles.cardTitle}>{item.title}</Text>
             <View style={styles.cardCapacityContainer}>
               <Text style={styles.cardCapacity}>{item.capacity}</Text>
-              <FontAwesome name="user" size={16} color="#f0f0f0" /> {/* User icon from @expo/vector-icons */}
+              <FontAwesome name="user" size={16} color="#f0f0f0" /> 
             </View>
           </View>
         </View>
@@ -202,12 +201,25 @@ export default function HomeScreen() {
     // Handle form submission
     console.log("Event Name:", eventName);
     console.log("Event Location:", eventLocation);
+    submitEvent();
     // Optionally reset the fields
     setEventName("");
     setEventLocation(undefined);
     setEventDetails("");
     setIsOpen(false); // Close the modal after submission
   };
+
+  async function submitEvent() {
+    try {
+      const userId = 1; // TODO: get user ID from auth context
+      const body = {title: eventName, description: eventDetails, latitude: eventLocation?.lat, longitude: eventLocation?.lng, capacity: 5};
+      const response = await axios.post(BACKEND_URL + `/events/create/`, body);
+      const responseData = response.data;
+      console.log(response)
+    } catch (error) {
+      console.error('Error:', error);  // Handle any errors
+    }
+  }
 
   
   if (isLoading) {
